@@ -8,10 +8,19 @@ fluidPage(
     column(12,
              tags$style(type = "text/css", "#map {height: calc(100vh - 15px) !important;}"),
              leafletOutput(outputId = 'map')
-    )
+    ),
+    bsCollapse(id = "tide_plot", open = "",
+               bsCollapsePanel("plot1", style = "info"))
   )
-  # absolutePanel(
-  #   id = "input_date_control",
-  #   draggable = T, top = '15%', left = '3%', right = 'auto', 
-  #   bottom = 'auto', width = '10%', height = '7%')
-)
+
+  )
+
+
+# fluidRow(
+#   column(12,
+#          conditionalPanel(condition = 'input.map_marker_click',
+#                           bottom = '50%', width = '100%', height = '20%',
+#                           # style="padding-left: 10px; padding-right: 8px; padding-top: 8px; padding-bottom: 8px",
+#                           h4(textOutput("click_text")))
+#          
+#   )

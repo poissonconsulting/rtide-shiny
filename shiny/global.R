@@ -19,6 +19,7 @@ parent <- "Shiny/horse-exploit-upload"
 initial_lat <- 40.6157777
 initial_long <- -127.311505
 initial_zoom <- 3
+click_zoom <- 11
 
 sites <- rtide::harmonics$Station %>%
   ps_longlat_to_sfc() %>%
