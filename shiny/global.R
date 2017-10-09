@@ -12,6 +12,9 @@ library(leaflet)
 library(rtide)
 library(poisspatial)
 library(leaflet.extras)
+library(plotly)
+library(scales)
+library(DT)
 
 helpers <- 'helpers/'
 parent <- "Shiny/horse-exploit-upload"
