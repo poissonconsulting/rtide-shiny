@@ -36,12 +36,7 @@ function(input, output, session) {
                             autoToggleDisplay = T,
                             tiles = "CartoDB.Positron") %>%
         
-        addResetMapButton() %>%
-        
-        leaflet.extras::addSearchFeatures(targetGroups = 'sites',
-                                          options = searchFeaturesOptions(
-                                            zoom = click_zoom, openPopup = TRUE, firstTipSubmit = TRUE,
-                                            autoCollapse = TRUE, hideMarkerOnCollapse = TRUE))
+        addResetMapButton() 
     })
   })
   

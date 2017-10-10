@@ -3,11 +3,7 @@ fluidPage(
   tags$head(
     # Include custom CSS
     includeCSS("style.css")
-    # includeScript("gomap.js")
   ),
-  # tags$head(tags$style(
-  #   HTML('#input_date_control {background-color: rgba(0,0,0,0.3);;}
-  #            #sel_date {background-color: rgba(0,0,0,1);}'))),
   
   fluidRow(
     column(12,
@@ -17,17 +13,20 @@ fluidPage(
     ),
     tags$head(tags$style(
       HTML('
-           #search_panel {background-color: rgba(0,0,0,0.1);}')
+           #search_panel {background-color: rgba(0,0,0,0);}')
       )),
     absolutePanel(id = "search_panel", class = "panel panel-default", fixed = TRUE,
-                  draggable = TRUE, top = 10, right = 25, left = 'auto', bottom = 'auto',
-                  width = 250, height = "auto",
-      selectizeInput(inputId = "search_site", label = "Search sites:", choices = sites$Station,
-                   selected = "")),
+                  draggable = TRUE, top = 9, right = 'auto', left = 70, bottom = 'auto',
+                  width = 250, height = 20,
+      selectizeInput(inputId = "search_site", label = NULL, choices = sites$Station,
+                     options = list(
+                       placeholder = 'Search stations...',
+                       onInitialize = I('function() { this.setValue(""); }')
+                     ))),
     
-    conditionalPanel(condition = 'input.map_marker_click',
+    conditionalPanel(condition = 'input.map_marker_click || input.search_site',
                      absolutePanel(id = "controls", class = "panel panel-default", fixed = TRUE,
-                                   draggable = TRUE, top = 100, right = 25, left = 'auto', bottom = 20,
+                                   draggable = TRUE, top = 8, right = 25, left = 'auto', bottom = 20,
                                    width = 420, height = "auto",
                                    br(),
                                    downloadButton(outputId = "download", label = ""),
