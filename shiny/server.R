@@ -171,6 +171,11 @@ function(input, output, session) {
     data
   })
     
+  # observeEvent(input$map_click,
+  #              {removeUI(
+  #                selector = 'div:has(> #data_panel)'
+  #              )})
+  
   ### when click on map
   observeEvent(input$map_marker_click,
                {leafletProxy('map') %>%
