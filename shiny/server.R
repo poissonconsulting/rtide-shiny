@@ -45,25 +45,16 @@ function(input, output, session) {
     })
   })
   
+  ### reactive funcitons when map click
   # update setView on site click
-  markerLong <- reactive({
+  locationMap <- reactive({
     click <- input$map_marker_click
-    long <- click$lng
-    long
+    loc <- c(click$lng, click$lat)
+    loc
   })
-  
-  markerLat <- reactive({
-    click <- input$map_marker_click
-    lat <- click$lat
-    lat
-  })
-  
-  observeEvent(input$map_marker_click,
-               {leafletProxy('map') %>%
-                   setView(lat = markerLat(), lng = markerLong(), zoom = click_zoom)})
   
   # update station label in panel
-  stationLabel <- reactive({
+  stationLabelMap <- reactive({
     click <- input$map_marker_click
     lng <- round(click$lng, 4)
     lat <- round(click$lat, 4)
@@ -71,11 +62,8 @@ function(input, output, session) {
     print(label)
   })
   
-  observeEvent(input$map_marker_click,
-               {output$station_title <- renderText({stationLabel()})})
-  
   # create plotly graph
-  filterData <- reactive({
+  filterDataMap <- reactive({
     click <- input$map_marker_click
     lng <- round(click$lng, 4)
     lat <- round(click$lat, 4)
@@ -83,15 +71,15 @@ function(input, output, session) {
     data
   })
   
-  prettySite <- reactive({
-    station <- filterData()$Station
+  prettyLabelMap <- reactive({
+    station <- filterDataMap()$Station
     label <- strsplit(station, ",")[[1]][1] %>%
       sub(" ", "", .)
     label
   })
   
-  tideData <- reactive({
-    filt <- filterData()
+  tideDataMap <- reactive({
+    filt <- filterDataMap()
     label <- filt$Station
     tz <- filt$TZ
     
@@ -105,8 +93,8 @@ function(input, output, session) {
     data
   })
   
-  tidePlot <- reactive({
-    gp <- ggplot(data = tideData(), aes(x = DateTime, y = TideHeight)) + 
+  tidePlotMap <- reactive({
+    gp <- ggplot(data = tideDataMap(), aes(x = DateTime, y = TideHeight)) + 
       geom_line() + 
       scale_x_datetime(name = "Date") +
       scale_y_continuous(name = "Tide Height (m)") +
@@ -115,8 +103,72 @@ function(input, output, session) {
     gp
   })
   
-  tideTable <- reactive({
-    data <- tideData() %>%
+  tideTableMap <- reactive({
+    data <- tideDataMap() %>%
+      dplyr::mutate(Date = lapply(strsplit(as.character(DateTime), " "), "[", 1) %>% unlist()) %>%
+      dplyr::mutate(Time = lapply(strsplit(as.character(DateTime), " "), "[", 2) %>% unlist()) %>%
+      dplyr::select(Date, Time, `Tide Height (m)` = TideHeight)
+    
+    data
+  })
+  
+  ### reactive funcitons when select station
+  # update setView on site click
+  locationSite <- reactive({
+    station <- input$search_site
+    lng <- filter(sites, Station == station)$X
+    lat <- filter(sites, Station == station)$Y
+    loc <- c(lng, lat)
+    loc
+  })
+  
+  # update station label in panel
+  stationLabelSite <- reactive({
+    label <- input$search_site
+    label
+  })
+  
+  # create plotly graph
+  filterDataSite <- reactive({
+    station <- input$search_site
+    data <- filter(sites, Station == station)
+    data
+  })
+  
+  prettyLabelSite <- reactive({
+    station <- input$search_site
+    label <- strsplit(station, ",")[[1]][1] %>%
+      sub(" ", "", .)
+    label
+  })
+  
+  tideDataSite <- reactive({
+    filt <- filterDataSite()
+    label <- filt$Station
+    tz <- filt$TZ
+    
+    data <- rtide::tide_height(
+      label, from = input$from, to = input$to, 
+      minutes = input$interval, tz = tz)
+    
+    data$TideHeight %<>% round(2)
+    data$TimeZone <- tz
+    
+    data
+  })
+  
+  tidePlotSite <- reactive({
+    gp <- ggplot(data = tideDataSite(), aes(x = DateTime, y = TideHeight)) + 
+      geom_line() + 
+      scale_x_datetime(name = "Date") +
+      scale_y_continuous(name = "Tide Height (m)") +
+      theme_bw() 
+    
+    gp
+  })
+  
+  tideTableSite <- reactive({
+    data <- tideDataSite() %>%
       dplyr::mutate(Date = lapply(strsplit(as.character(DateTime), " "), "[", 1) %>% unlist()) %>%
       dplyr::mutate(Time = lapply(strsplit(as.character(DateTime), " "), "[", 2) %>% unlist()) %>%
       dplyr::select(Date, Time, `Tide Height (m)` = TideHeight)
@@ -124,25 +176,61 @@ function(input, output, session) {
     data
   })
     
+  ### when click on map
+  observeEvent(input$map_marker_click,
+               {leafletProxy('map') %>%
+                   setView(lat = locationMap()[2], lng = locationMap()[1], zoom = click_zoom)})
+  
+  observeEvent(input$map_marker_click,
+               {output$station_title <- renderText({stationLabelMap()})})
+  
   observeEvent(input$map_marker_click,
                {output$tide_plot <- renderPlotly({
-                 ggplotly(tidePlot())
+                 ggplotly(tidePlotMap())
                })})
   
   observeEvent(input$map_marker_click,
                {output$tide_table <- DT::renderDataTable({
-                 tideTable()
+                 tideTableMap()
                })})
   
+#   output$download <- downloadHandler(
+#     filename = function() {
+#       paste0(prettyLabel(), "_", fromDate(), "_", toDate(), ".csv")
+#     },
+#     content <- function(file) {
+#       readr::write_csv(tideData(), file)
+#     }
+#   )
+# }
+  ### when search site
+  observeEvent(input$search_site,
+               {leafletProxy('map') %>%
+                   setView(lat = locationSite()[2], lng = locationSite()[1], zoom = click_zoom)})
+
+  observeEvent(input$search_site,
+               {output$station_title <- renderText({stationLabelSite()})})
+
+  observeEvent(input$search_site,
+               {output$tide_plot <- renderPlotly({
+                 ggplotly(tidePlotSite())
+               })})
+
+  observeEvent(input$search_site,
+               {output$tide_table <- DT::renderDataTable({
+                 tideTableSite()
+               })})
+
   
-  output$download <- downloadHandler(
-    filename = function() {
-      paste0(prettySite(), "_", fromDate(), "_", toDate(), ".csv")
-    },
-    content <- function(file) {
-      readr::write_csv(tideData(), file)
-    }
-  )
+  ### download
+#   output$download <- downloadHandler(
+#     filename = function() {
+#       paste0(prettyLabel(), "_", fromDate(), "_", toDate(), ".csv")
+#     },
+#     content <- function(file) {
+#       readr::write_csv(tideData(), file)
+#     }
+#   )
 }
 
 

@@ -15,10 +15,19 @@ fluidPage(
            leafletOutput(outputId = 'map')
            
     ),
+    tags$head(tags$style(
+      HTML('
+           #search_panel {background-color: rgba(0,0,0,0.1);}')
+      )),
+    absolutePanel(id = "search_panel", class = "panel panel-default", fixed = TRUE,
+                  draggable = TRUE, top = 10, right = 25, left = 'auto', bottom = 'auto',
+                  width = 250, height = "auto",
+      selectizeInput(inputId = "search_site", label = "Search sites:", choices = sites$Station,
+                   selected = "")),
     
     conditionalPanel(condition = 'input.map_marker_click',
                      absolutePanel(id = "controls", class = "panel panel-default", fixed = TRUE,
-                                   draggable = TRUE, top = 10, right = 25, left = 'auto', bottom = 20,
+                                   draggable = TRUE, top = 100, right = 25, left = 'auto', bottom = 20,
                                    width = 420, height = "auto",
                                    br(),
                                    downloadButton(outputId = "download", label = ""),
@@ -27,13 +36,13 @@ fluidPage(
                                    div(id = 'date_range',
                                        fluidRow(
                                          column(4,
-                                                dateInput("from", "From")
+                                                dateInput("from", "From:")
                                          ),
                                          column(4,
                                                 dateInput("to", "To")
                                          ),
                                          column(4,
-                                                numericInput("interval", "Interval (minutes)", value = 10, min = 0, max = 60, step = 5)
+                                                numericInput("interval", "Interval (minutes):", value = 10, min = 0, max = 60, step = 5)
                                          ))),
                                    
                                    plotlyOutput("tide_plot", height = 250),
@@ -47,19 +56,4 @@ fluidPage(
   )
 )
 
-# ,
-# conditionalPanel(condition = 'input.map_marker_click',
-#                  absolutePanel(
-#                    bottom = '10%', left = "20%", width = '100%', height = '20%',
-#                    tyle="padding-left: 10px; padding-right: 8px; padding-top: 8px; padding-bottom: 8px",
-#                    h4(textOutput("click_text"))
-#                  )
-                 
-# fluidRow(
-#   column(12,
-#          
-#          
-#   )
-# 
-# bsCollapse(id = "tide_plot", open = "",
-#            bsCollapsePanel("plot1", style = "info"))
+
