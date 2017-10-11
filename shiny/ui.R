@@ -22,7 +22,8 @@ fluidPage(
                      options = list(
                        placeholder = 'Search stations...',
                        onInitialize = I('function() { this.setValue(""); }')
-                     ))),
+                     )),
+      actionButton("reset_view", "Reset view")),
     
     conditionalPanel(condition = 'input.map_marker_click || input.search_site',
                      absolutePanel(id = "controls", class = "panel panel-default", fixed = TRUE,
@@ -35,10 +36,10 @@ fluidPage(
                                    div(id = 'date_range',
                                        fluidRow(
                                          column(4,
-                                                dateInput("from", "From:")
+                                                dateInput("from", "From:", format = "M d, yyyy")
                                          ),
                                          column(4,
-                                                dateInput("to", "To")
+                                                dateInput("to", "To", format = "M d, yyyy")
                                          ),
                                          column(4,
                                                 numericInput("interval", "Interval (minutes):", value = 10, min = 0, max = 60, step = 5)

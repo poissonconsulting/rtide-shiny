@@ -9,6 +9,9 @@ function(input, output, session) {
       leaflet() %>%
         
         setView(lat = initial_lat, lng = initial_long, zoom = initial_zoom) %>%
+        
+        addResetMapButton() %>%
+        
         leaflet::addProviderTiles("CartoDB.Positron", options = providerTileOptions(opacity = 1), group = "Basemap") %>%
         leaflet::addProviderTiles("Esri.WorldImagery", options = providerTileOptions(opacity = 1), group = "Satelite") %>%
         
@@ -34,9 +37,7 @@ function(input, output, session) {
                             # centerFixed = c(initial_lat, initial_long),
                             toggleDisplay = T,
                             autoToggleDisplay = T,
-                            tiles = "CartoDB.Positron") %>%
-        
-        addResetMapButton() 
+                            tiles = "CartoDB.Positron") 
     })
   })
   
@@ -164,7 +165,10 @@ function(input, output, session) {
   
   tideTableSite <- reactive({
     data <- tideDataSite() %>%
-      dplyr::mutate(Date = lapply(strsplit(as.character(DateTime), " "), "[", 1) %>% unlist()) %>%
+      dplyr::mutate(Year = lubridate::year(DateTime),
+                    Month = lubridate::month(DateTime, label = T, abbr = T),
+                    Day = lubridate::day(DateTime),
+                    Date = paste0(Month, " ", Day, ", ", Year)) %>%
       dplyr::mutate(Time = lapply(strsplit(as.character(DateTime), " "), "[", 2) %>% unlist()) %>%
       dplyr::select(Date, Time, `Tide Height (m)` = TideHeight)
     
@@ -221,6 +225,10 @@ function(input, output, session) {
                  tideTableSite()
                })})
 
+  observe({
+    input$reset_view
+    leafletProxy("map") %>% setView(lat = initial_lat, lng = initial_long, zoom = initial_zoom)
+  })
   
   ### download
 #   output$download <- downloadHandler(
