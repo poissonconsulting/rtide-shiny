@@ -30,7 +30,16 @@ fluidPage(
                                    draggable = TRUE, top = 8, right = 25, left = 'auto', bottom = 20,
                                    width = 430, height = "auto",
                                    br(),
-                                   downloadButton(outputId = "download", label = ""),
+                                   div(id = 'top_row',
+                                       fluidRow(
+                                         column(2,
+                                                downloadButton(outputId = "download", label = "")
+                                         ),
+                                         column(6,
+                                                radioButtons(inputId = "units", choices = c("meters", "feet"), label = "", selected = "meters",
+                                                             inline = T)
+                                         ))),
+                                   
                                    h4(textOutput('station_title')),                                         
 
                                    div(id = 'date_range',
@@ -47,6 +56,8 @@ fluidPage(
                                    
                                    plotlyOutput("tide_plot", height = 250),
                                    br(), br(),
+                                   radioButtons(inputId = "table_display", choices = c("all data", "low/high per day"), label = "", selected = "all data",
+                                                inline = T),
                                    DT::dataTableOutput('tide_table'),
                                    style = "overflow-x:scroll"
                                    
