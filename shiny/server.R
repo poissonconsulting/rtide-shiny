@@ -101,8 +101,14 @@ function(input, output, session) {
   
   tideTableMap <- reactive({
     data <- tideDataMap() %>%
-      dplyr::mutate(Date = lapply(strsplit(as.character(DateTime), " "), "[", 1) %>% unlist()) %>%
-      dplyr::mutate(Time = lapply(strsplit(as.character(DateTime), " "), "[", 2) %>% unlist()) %>%
+      dplyr::mutate(Year = lubridate::year(DateTime),
+                    Month = lubridate::month(DateTime, label = T, abbr = T),
+                    Day = lubridate::day(DateTime),
+                    Time2 = lapply(strsplit(as.character(DateTime), " "), "[", 2) %>% unlist()) %>%
+      dplyr::mutate(Hour = lapply(strsplit(as.character(Time2), ":"), "[", 1) %>% unlist(),
+                    Minute = lapply(strsplit(as.character(Time2), ":"), "[", 2) %>% unlist()) %>%
+      dplyr::mutate(Time = paste0(Hour, ":", Minute),
+                    Date = paste0(Month, " ", Day, ", ", Year)) %>%
       dplyr::select(Date, Time, `Tide Height (m)` = TideHeight)
     
     data
@@ -168,8 +174,11 @@ function(input, output, session) {
       dplyr::mutate(Year = lubridate::year(DateTime),
                     Month = lubridate::month(DateTime, label = T, abbr = T),
                     Day = lubridate::day(DateTime),
+                    Time2 = lapply(strsplit(as.character(DateTime), " "), "[", 2) %>% unlist()) %>%
+      dplyr::mutate(Hour = lapply(strsplit(as.character(Time2), ":"), "[", 1) %>% unlist(),
+                    Minute = lapply(strsplit(as.character(Time2), ":"), "[", 2) %>% unlist()) %>%
+      dplyr::mutate(Time = paste0(Hour, ":", Minute),
                     Date = paste0(Month, " ", Day, ", ", Year)) %>%
-      dplyr::mutate(Time = lapply(strsplit(as.character(DateTime), " "), "[", 2) %>% unlist()) %>%
       dplyr::select(Date, Time, `Tide Height (m)` = TideHeight)
     
     data

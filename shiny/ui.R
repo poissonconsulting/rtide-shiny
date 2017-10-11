@@ -28,7 +28,7 @@ fluidPage(
     conditionalPanel(condition = 'input.map_marker_click || input.search_site',
                      absolutePanel(id = "controls", class = "panel panel-default", fixed = TRUE,
                                    draggable = TRUE, top = 8, right = 25, left = 'auto', bottom = 20,
-                                   width = 420, height = "auto",
+                                   width = 430, height = "auto",
                                    br(),
                                    downloadButton(outputId = "download", label = ""),
                                    h4(textOutput('station_title')),                                         
