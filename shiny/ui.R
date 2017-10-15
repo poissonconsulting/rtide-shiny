@@ -35,10 +35,11 @@ fluidPage(
                                          column(2,
                                                 downloadButton(outputId = "download", label = "")
                                          ),
-                                         column(6,
-                                                radioButtons(inputId = "units", choices = c("meters", "feet"), label = "", selected = "meters",
-                                                             inline = T)
-                                         ))),
+                                         column(4,
+                                                materialSwitch(inputId = "table_display", label = "Convert to feet", inline = T)),
+                                         column(4,
+                                                materialSwitch(inputId = "unit_conversion", label  = "Daily low/high", inline = T))
+                                         )),
                                    
                                    h4(textOutput('station_title')),                                         
 
@@ -56,8 +57,7 @@ fluidPage(
                                    
                                    plotlyOutput("tide_plot", height = 250),
                                    br(), br(),
-                                   radioButtons(inputId = "table_display", choices = c("all data", "low/high per day"), label = "", selected = "all data",
-                                                inline = T),
+       
                                    DT::dataTableOutput('tide_table'),
                                    style = "overflow-x:scroll"
                                    

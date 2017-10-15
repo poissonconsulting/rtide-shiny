@@ -26,13 +26,13 @@ h1, h2, h3, h4 { font-weight: 400; }
 padding: 0 20px 20px 20px;
 cursor: move;
 /* Fade out while not hovering */
-  opacity: 0.2;
+  opacity: 0.1;
 zoom: 0.9;
 transition: opacity 500ms 1s;
 }
 #controls:hover {
 /* Fade in while hovering */
-  opacity: 0.85;
+  opacity: 0.9;
 transition-delay: 0;
 }
 

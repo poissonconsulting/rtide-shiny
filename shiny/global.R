@@ -15,6 +15,7 @@ library(leaflet.extras)
 library(plotly)
 library(scales)
 library(DT)
+library(shinyWidgets)
 
 helpers <- 'helpers/'
 parent <- "Shiny/horse-exploit-upload"
