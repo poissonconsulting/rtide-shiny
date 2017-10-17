@@ -27,7 +27,7 @@ fluidPage(
     
     conditionalPanel(condition = 'input.map_marker_click || input.search_site',
                      absolutePanel(id = "controls", class = "panel panel-default", fixed = TRUE,
-                                   draggable = TRUE, top = 8, right = 25, left = 'auto', bottom = 20,
+                                   draggable = F, top = 8, right = 25, left = 'auto', bottom = 20,
                                    width = 430, height = "auto",
                                    br(),
                                    div(id = 'top_row',
@@ -36,9 +36,9 @@ fluidPage(
                                                 downloadButton(outputId = "download", label = "")
                                          ),
                                          column(4,
-                                                materialSwitch(inputId = "table_display", label = "Convert to feet", inline = T)),
-                                         column(4,
-                                                materialSwitch(inputId = "unit_conversion", label  = "Daily low/high", inline = T))
+                                                materialSwitch(inputId = "table_display", label = "Feet", inline = T)),
+                                         column(5,
+                                                materialSwitch(inputId = "unit_conversion", label  = "Low/high", inline = T))
                                          )),
                                    
                                    h4(textOutput('station_title')),                                         
@@ -49,15 +49,17 @@ fluidPage(
                                                 dateInput("from", "From:", format = "M d, yyyy")
                                          ),
                                          column(4,
-                                                dateInput("to", "To", format = "M d, yyyy")
+                                                dateInput("to", "To", format = "M d, yyyy", value = Sys.Date() + 7)
                                          ),
                                          column(4,
                                                 numericInput("interval", "Interval (minutes):", value = 10, min = 0, max = 60, step = 5)
                                          ))),
                                    
-                                   plotlyOutput("tide_plot", height = 250),
-                                   br(), br(),
-       
+                                   # plotlyOutput("tide_plot", height = 250),
+                                   #metricsgraphicsOutput("tide_plot"),
+                                   dygraphOutput("tide_plot"),
+                                   br(),
+
                                    DT::dataTableOutput('tide_table'),
                                    style = "overflow-x:scroll"
                                    

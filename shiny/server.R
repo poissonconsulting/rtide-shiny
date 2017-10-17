@@ -92,15 +92,33 @@ function(input, output, session) {
     data
   })
   
+  # metrics
+  # tidePlot <- reactive({
+  #  dat <- tideData()
+  # 
+  #  gp <- mjs_plot(data = dat, x = DateTime, y = TideHeight, height = 10, left = 10, top = 0) %>%
+  #    mjs_line() %>%
+  #    mjs_labs(y = "Tide Height (m)")
+  #  gp
+  # })
+  
+  # dygraph
   tidePlot <- reactive({
-    gp <- ggplot(data = tideData(), aes(x = DateTime, y = TideHeight)) + 
-      geom_line() + 
-      scale_x_datetime(name = "Date") +
-      scale_y_continuous(name = "Tide Height (m)") +
-      theme_bw() 
+    dat <- tideData() 
+    pad <- (max(dat$TideHeight) - min(dat$TideHeight))/7
     
-    gp
+    dat %<>% select(`Tide Height` = TideHeight, `Date-Time` = DateTime)
+    xtsdat <- xts::xts(dat, order.by = dat$`Date-Time`)
+    
+    dygraph(xtsdat, height = "10px") %>%
+      dyOptions(strokeWidth = 1.5, drawGrid = F, includeZero = F, 
+                useDataTimezone = T, drawGapEdgePoints = T, rightGap = 0) %>%
+      dyRangeSelector() %>%
+      dyAxis("y", valueRange = c(min(dat$`Tide Height`) - pad, max(dat$`Tide Height`) + pad)) %>%
+      dyAxis("y2", valueRange = c(min(dat$`Tide Height`) - pad, max(dat$`Tide Height`) + pad))
   })
+
+  #dygraphs
   
   tideTable <- reactive({
     data <- tideData() %>%
@@ -117,7 +135,7 @@ function(input, output, session) {
     data
   })
   
-  ### when click on map
+  ### when click on map or search site
   observeEvent(c(input$map_marker_click, input$search_site),
                {leafletProxy('map') %>%
                    setView(lat = location$loc[2], lng = location$loc[1], zoom = click_zoom)})
@@ -126,15 +144,14 @@ function(input, output, session) {
                {output$station_title <- renderText({stationLabel()})})
   
   observeEvent(c(input$map_marker_click, input$search_site),
-               {output$tide_plot <- renderPlotly({
-                 ggplotly(tidePlot())
+               {output$tide_plot <- renderDygraph({
+                 tidePlot()
                })})
   
   observeEvent(c(input$map_marker_click, input$search_site),
                {output$tide_table <- DT::renderDataTable({
                  tideTable()
                })})
-  
   
   #   output$download <- downloadHandler(
   #     filename = function() {

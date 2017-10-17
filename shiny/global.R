@@ -16,6 +16,9 @@ library(plotly)
 library(scales)
 library(DT)
 library(shinyWidgets)
+library(metricsgraphics)
+library(dygraphs)
+library(highcharter)
 
 helpers <- 'helpers/'
 parent <- "Shiny/horse-exploit-upload"
