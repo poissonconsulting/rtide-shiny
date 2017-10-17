@@ -118,40 +118,23 @@ function(input, output, session) {
   })
   
   ### when click on map
-  observeEvent(input$map_marker_click,
+  observeEvent(c(input$map_marker_click, input$search_site),
                {leafletProxy('map') %>%
                    setView(lat = location$loc[2], lng = location$loc[1], zoom = click_zoom)})
   
-  observeEvent(input$map_marker_click,
+  observeEvent(c(input$map_marker_click, input$search_site),
                {output$station_title <- renderText({stationLabel()})})
   
-  observeEvent(input$map_marker_click,
+  observeEvent(c(input$map_marker_click, input$search_site),
                {output$tide_plot <- renderPlotly({
                  ggplotly(tidePlot())
                })})
   
-  observeEvent(input$map_marker_click,
+  observeEvent(c(input$map_marker_click, input$search_site),
                {output$tide_table <- DT::renderDataTable({
                  tideTable()
                })})
   
-  ### when search site
-  observeEvent(input$search_site,
-               {leafletProxy('map') %>%
-                   setView(lat = location$loc[2], lng = location$loc[1], zoom = click_zoom)})
-  
-  observeEvent(input$search_site,
-               {output$station_title <- renderText({stationLabel()})})
-  
-  observeEvent(input$search_site,
-               {output$tide_plot <- renderPlotly({
-                 ggplotly(tidePlot())
-               })})
-  
-  observeEvent(input$search_site,
-               {output$tide_table <- DT::renderDataTable({
-                 tideTable()
-               })})
   
   #   output$download <- downloadHandler(
   #     filename = function() {
