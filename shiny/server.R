@@ -41,33 +41,31 @@ function(input, output, session) {
     })
   })
   
-  ### reactive functions when map click
-  # update setView on site click
-  location <- reactive({
-    if(!is.null(input$map_marker_click)){
-      click <- input$map_marker_click
-      loc <- c(click$lng, click$lat)
-      loc
-    } else if(!is.null(input$search_site)){
-      station <- input$search_site
-      lng <- filter(sites, Station == station)$X
-      lat <- filter(sites, Station == station)$Y
-      loc <- c(lng, lat)
-      loc
-    }
-    print(loc)
-  })
+  ### when map click or search site
+  location <- reactiveValues(loc = NULL)
+  
+  observeEvent(input$map_marker_click, {
+    click <- input$map_marker_click
+    loc <- c(click$lng, click$lat)           
+    location$loc <- loc})
+  
+  observeEvent(input$search_site, {
+    station <- input$search_site
+    lng <- filter(sites, Station == station)$X
+    lat <- filter(sites, Station == station)$Y
+    loc <- c(lng, lat)       
+    location$loc <- loc})
   
   # update station label in panel
   stationLabel <- reactive({
-    loc <- location()
+    loc <- location$loc
     label <- filter(sites, X == loc[1] & Y == loc[2])$Station
     print(label)
   })
   
   # create plotly graph
   filterData <- reactive({
-    loc <- location()
+    loc <- location$loc
     data <- filter(sites, X == round(loc[1], 4) & Y == round(loc[2], 4))
     data
   })
@@ -122,7 +120,7 @@ function(input, output, session) {
   ### when click on map
   observeEvent(input$map_marker_click,
                {leafletProxy('map') %>%
-                   setView(lat = location()[2], lng = location()[1], zoom = click_zoom)})
+                   setView(lat = location$loc[2], lng = location$loc[1], zoom = click_zoom)})
   
   observeEvent(input$map_marker_click,
                {output$station_title <- renderText({stationLabel()})})
@@ -140,7 +138,7 @@ function(input, output, session) {
   ### when search site
   observeEvent(input$search_site,
                {leafletProxy('map') %>%
-                   setView(lat = location()[2], lng = location()[1], zoom = click_zoom)})
+                   setView(lat = location$loc[2], lng = location$loc[1], zoom = click_zoom)})
   
   observeEvent(input$search_site,
                {output$station_title <- renderText({stationLabel()})})
