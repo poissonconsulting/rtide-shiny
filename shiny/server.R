@@ -114,8 +114,9 @@ function(input, output, session) {
       dyOptions(strokeWidth = 1.5, drawGrid = F, includeZero = F, 
                 useDataTimezone = T, drawGapEdgePoints = T, rightGap = 0) %>%
       dyRangeSelector() %>%
-      dyAxis("y", valueRange = c(min(dat$`Tide Height`) - pad, max(dat$`Tide Height`) + pad)) %>%
-      dyAxis("y2", valueRange = c(min(dat$`Tide Height`) - pad, max(dat$`Tide Height`) + pad))
+      dyAxis("y", valueRange = c(min(dat$`Tide Height`) - pad, max(dat$`Tide Height`) + pad),
+             label = "Tide Height (m)") 
+    
   })
 
   #dygraphs

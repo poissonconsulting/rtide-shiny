@@ -53,12 +53,12 @@ fluidPage(
                                          ),
                                          column(4,
                                                 numericInput("interval", "Interval (minutes):", value = 10, min = 0, max = 60, step = 5)
-                                         ))),
+                                         ))),br(),
                                    
                                    # plotlyOutput("tide_plot", height = 250),
                                    #metricsgraphicsOutput("tide_plot"),
-                                   dygraphOutput("tide_plot"),
-                                   br(),
+                                   dygraphOutput("tide_plot", width = '100%', height = '50%'),
+                                   br(),br(),
 
                                    DT::dataTableOutput('tide_table'),
                                    style = "overflow-x:scroll"
