@@ -10,8 +10,9 @@ function(input, output, session) {
         
         setView(lat = initial_lat, lng = initial_long, zoom = initial_zoom) %>%
         
-        addResetMapButton() %>%
-        
+        addEasyButton(easyButton(icon = "ion-arrow-shrink",
+                                 title = "Reset View", onClick = JS("function(btn, map){ map.setView(new L.LatLng(40.6157777, -127.311505), 3, { animation: true });}"))) %>%
+
         leaflet::addProviderTiles("CartoDB.Positron", options = providerTileOptions(opacity = 1), group = "Basemap") %>%
         leaflet::addProviderTiles("Esri.WorldImagery", options = providerTileOptions(opacity = 1), group = "Satelite") %>%
         
@@ -89,6 +90,8 @@ function(input, output, session) {
     data$TideHeight %<>% round(2)
     data$TimeZone <- tz
     
+    
+    
     data
   })
   
@@ -105,6 +108,11 @@ function(input, output, session) {
   # dygraph
   tidePlot <- reactive({
     dat <- tideData() 
+    if(input$unit_conversion == T){
+      dat %<>% mutate(TideHeight = TideHeight * 2.2)
+      dat
+    } else dat <- dat
+    
     pad <- (max(dat$TideHeight) - min(dat$TideHeight))/7
     
     dat %<>% select(`Tide Height` = TideHeight, `Date-Time` = DateTime)
@@ -118,6 +126,7 @@ function(input, output, session) {
              label = "Tide Height (m)") 
     
   })
+  
 
   #dygraphs
   
@@ -163,11 +172,7 @@ function(input, output, session) {
   #     }
   #   )
   # }
-  
-  observe({
-    input$reset_view
-    leafletProxy("map") %>% setView(lat = initial_lat, lng = initial_long, zoom = initial_zoom)
-  })
+
   
   ### download
   #   output$download <- downloadHandler(

@@ -22,9 +22,8 @@ fluidPage(
                      options = list(
                        placeholder = 'Search stations...',
                        onInitialize = I('function() { this.setValue(""); }')
-                     )),
-      actionButton("reset_view", "Reset view")),
-    
+                     ))),
+
     conditionalPanel(condition = 'input.map_marker_click || input.search_site',
                      absolutePanel(id = "controls", class = "panel panel-default", fixed = TRUE,
                                    draggable = F, top = 8, right = 25, left = 'auto', bottom = 20,
