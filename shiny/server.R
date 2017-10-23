@@ -79,6 +79,7 @@ function(input, output, session) {
   })
   
   tideData <- reactive({
+    req(location$loc)
     filt <- filterData()
     label <- filt$Station
     tz <- filt$TZ
@@ -107,28 +108,38 @@ function(input, output, session) {
   
   # dygraph
   tidePlot <- reactive({
-    dat <- tideData() 
-    if(input$unit_conversion == T){
-      dat %<>% mutate(TideHeight = TideHeight * 2.2)
-      dat
-    } else dat <- dat
-    
+    dat <- tideData()
+    # if(input$unit_conversion == T){
+    #   dat %<>% mutate(TideHeight = TideHeight * 2.2)
+    #   dat
+    # } else dat <- dat
+
     pad <- (max(dat$TideHeight) - min(dat$TideHeight))/7
-    
+
     dat %<>% select(`Tide Height` = TideHeight, `Date-Time` = DateTime)
     xtsdat <- xts::xts(dat, order.by = dat$`Date-Time`)
-    
+
     dygraph(xtsdat, height = "10px") %>%
-      dyOptions(strokeWidth = 1.5, drawGrid = F, includeZero = F, 
+      dyOptions(strokeWidth = 1.5, drawGrid = F, includeZero = F,
                 useDataTimezone = T, drawGapEdgePoints = T, rightGap = 0) %>%
       dyRangeSelector() %>%
       dyAxis("y", valueRange = c(min(dat$`Tide Height`) - pad, max(dat$`Tide Height`) + pad),
-             label = "Tide Height (m)") 
-    
+             label = "Tide Height (m)")
+
   })
   
-
-  #dygraphs
+  # # highcharts
+  # tidePlot <- reactive({
+  #   dat <- tideData() 
+  #   
+  #   pad <- (max(dat$TideHeight) - min(dat$TideHeight))/7
+  #   
+  #   # dat %<>% select(`Tide Height` = TideHeight, `Date-Time` = DateTime)
+  #   
+  #   hc <- highchart() %>%
+  #     hc_add_series_df(data = dat, type = "line", aes(x  = DateTime, y = TideHeight))
+  #   
+  # })
   
   tideTable <- reactive({
     data <- tideData() %>%
