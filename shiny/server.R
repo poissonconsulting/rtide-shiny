@@ -91,9 +91,20 @@ function(input, output, session) {
     data$TideHeight %<>% round(2)
     data$TimeZone <- tz
     
-    
-    
     data
+  })
+  
+  dailyData <- reactive({
+    data <- tideData()
+    
+    high <- data[find_peaks(data$TideHeight, m = 3), c("DateTime","TideHeight")] %>%
+      setNames(c("DateTime", "Height"))
+    
+    low <- data[find_peaks(-data$TideHeight, m = 3), c("DateTime","TideHeight")] %>%
+      setNames(c("DateTime", "Height"))
+    
+    daily <- rbind(high, low)
+    
   })
   
   # metrics
@@ -156,6 +167,25 @@ function(input, output, session) {
     data
   })
   
+  
+  dailyTable <- reactive({
+    data <- dailyData() 
+    
+    data %<>% mutate(Year = lubridate::year(DateTime),
+                     Month = lubridate::month(DateTime, label = T, abbr = T),
+                     Day = lubridate::day(DateTime),
+                     Time = lapply(strsplit(as.character(DateTime), " "), "[", 2) %>% unlist(),
+                     Height = round(Height, 2)) %>%
+      mutate(Date = paste0(Month, " ", Day, ", ", Year)) %>%
+      arrange(Date, Time) %>%
+      group_by(Date, Height) %>%
+      slice(1) %>%
+      select(Date, Time, `Height (m)` = Height) %>%
+      arrange(Date, Time)
+      
+    data
+  })
+  
   ### when click on map or search site
   observeEvent(c(input$map_marker_click, input$search_site),
                {leafletProxy('map') %>%
@@ -172,6 +202,11 @@ function(input, output, session) {
   observeEvent(c(input$map_marker_click, input$search_site),
                {output$tide_table <- DT::renderDataTable({
                  tideTable()
+               })})
+  
+  observeEvent(c(input$map_marker_click, input$search_site),
+               {output$daily_table <- DT::renderDataTable({
+                 dailyTable()
                })})
   
   #   output$download <- downloadHandler(
