@@ -174,9 +174,12 @@ function(input, output, session) {
     data %<>% mutate(Year = lubridate::year(DateTime),
                      Month = lubridate::month(DateTime, label = T, abbr = T),
                      Day = lubridate::day(DateTime),
-                     Time = lapply(strsplit(as.character(DateTime), " "), "[", 2) %>% unlist(),
+                     Time2 = lapply(strsplit(as.character(DateTime), " "), "[", 2) %>% unlist(),
                      Height = round(Height, 2)) %>%
-      mutate(Date = paste0(Month, " ", Day, ", ", Year)) %>%
+      dplyr::mutate(Hour = lapply(strsplit(as.character(Time2), ":"), "[", 1) %>% unlist(),
+                    Minute = lapply(strsplit(as.character(Time2), ":"), "[", 2) %>% unlist()) %>%
+      mutate(Time = paste0(Hour, ":", Minute),
+             Date = paste0(Month, " ", Day, ", ", Year)) %>%
       arrange(Date, Time) %>%
       group_by(Date, Height) %>%
       slice(1) %>%
