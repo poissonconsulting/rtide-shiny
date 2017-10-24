@@ -162,7 +162,7 @@ function(input, output, session) {
                     Minute = lapply(strsplit(as.character(Time2), ":"), "[", 2) %>% unlist()) %>%
       dplyr::mutate(Time = paste0(Hour, ":", Minute),
                     Date = paste0(Month, " ", Day, ", ", Year)) %>%
-      dplyr::select(Date, Time, `Tide Height (m)` = TideHeight)
+      dplyr::select(Date, Time, `Height (m)` = TideHeight)
     
     data
   })

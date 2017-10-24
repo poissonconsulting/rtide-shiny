@@ -25,7 +25,7 @@ fluidPage(
   # conditionalPanel(condition = 'input.map_marker_click || input.search_site',
                    
                    absolutePanel(id = "controls", class = "panel panel-default", fixed = TRUE,
-                                 draggable = T, top = 10, right = 25, left = 'auto', bottom = 20,
+                                 draggable = F, top = 10, right = 25, left = 'auto', bottom = 20,
                                  width = 430, height = "auto",
                                  # HTML('<button data-toggle="collapse" data-target="#view">Collapsible</button>'),
                                  # div(id = 'view',  class = "collapse in",
