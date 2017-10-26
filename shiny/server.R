@@ -180,11 +180,10 @@ function(input, output, session) {
                     Minute = lapply(strsplit(as.character(Time2), ":"), "[", 2) %>% unlist()) %>%
       mutate(Time = paste0(Hour, ":", Minute),
              Date = paste0(Month, " ", Day, ", ", Year)) %>%
-      arrange(Date, Time) %>%
       group_by(Date, Height) %>%
       slice(1) %>%
-      select(Date, Time, `Height (m)` = Height) %>%
-      arrange(Date, Time)
+      arrange(DateTime) %>%
+      select(Date, Time, `Height (m)` = Height) 
       
     data
   })
