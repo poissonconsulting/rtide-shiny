@@ -58,10 +58,12 @@ fluidPage(
                                                      dygraphOutput("tide_plot", height = "375px")),
                                             tabPanel(title = "Table",
                                                      br(),
-                                                     DT::dataTableOutput('tide_table')),
-                                            tabPanel(title = "Daily Low/High",
-                                                     br(),
-                                                     DT::dataTableOutput('daily_table'))),
+                                                     DT::dataTableOutput('tide_table'))
+                                            # tabPanel(title = "Daily Low/High",
+                                            #          br(),
+                                            #          DT::dataTableOutput('daily_table'))),
+                                          ), br(),
+                                 actionLink("disclaimer", label = "Disclaimer"),
                                           style = "overflow-x:scroll"
                                  )
 

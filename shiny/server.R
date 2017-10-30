@@ -106,18 +106,18 @@ function(input, output, session) {
     data
   })
   
-  dailyData <- reactive({
-    data <- tideData()
-    
-    high <- data[find_peaks(data$TideHeight, m = 3), c("DateTime","TideHeight")] %>%
-      setNames(c("DateTime", "Height"))
-    
-    low <- data[find_peaks(-data$TideHeight, m = 3), c("DateTime","TideHeight")] %>%
-      setNames(c("DateTime", "Height"))
-    
-    daily <- rbind(high, low)
-    
-  })
+  # dailyData <- reactive({
+  #   data <- tideData()
+  #   
+  #   high <- data[find_peaks(data$TideHeight, m = 3), c("DateTime","TideHeight")] %>%
+  #     setNames(c("DateTime", "Height"))
+  #   
+  #   low <- data[find_peaks(-data$TideHeight, m = 3), c("DateTime","TideHeight")] %>%
+  #     setNames(c("DateTime", "Height"))
+  #   
+  #   daily <- rbind(high, low)
+  #   
+  # })
   
   downloadData <- reactive({
     data <- tideData()
@@ -218,26 +218,26 @@ function(input, output, session) {
     data
   })
   
-  dailyTable <- reactive({
-    data <- dailyData() 
-    
-    data %<>% mutate(Year = lubridate::year(DateTime),
-                     Month = lubridate::month(DateTime, label = T, abbr = T),
-                     Day = lubridate::day(DateTime),
-                     Time2 = lapply(strsplit(as.character(DateTime), " "), "[", 2) %>% unlist(),
-                     Height = round(Height, 2)) %>%
-      dplyr::mutate(Hour = lapply(strsplit(as.character(Time2), ":"), "[", 1) %>% unlist(),
-                    Minute = lapply(strsplit(as.character(Time2), ":"), "[", 2) %>% unlist()) %>%
-      mutate(Time = paste0(Hour, ":", Minute),
-             Date = paste0(Month, " ", Day, ", ", Year)) %>%
-      group_by(Date, Height) %>%
-      slice(1) %>%
-      arrange(DateTime) %>%
-      select(Date, Time, Height) %>%
-      setNames(c("Date", "Time", unitLabel()))
-    
-    data
-  })
+  # dailyTable <- reactive({
+  #   data <- dailyData() 
+  #   
+  #   data %<>% mutate(Year = lubridate::year(DateTime),
+  #                    Month = lubridate::month(DateTime, label = T, abbr = T),
+  #                    Day = lubridate::day(DateTime),
+  #                    Time2 = lapply(strsplit(as.character(DateTime), " "), "[", 2) %>% unlist(),
+  #                    Height = round(Height, 2)) %>%
+  #     dplyr::mutate(Hour = lapply(strsplit(as.character(Time2), ":"), "[", 1) %>% unlist(),
+  #                   Minute = lapply(strsplit(as.character(Time2), ":"), "[", 2) %>% unlist()) %>%
+  #     mutate(Time = paste0(Hour, ":", Minute),
+  #            Date = paste0(Month, " ", Day, ", ", Year)) %>%
+  #     group_by(Date, Height) %>%
+  #     slice(1) %>%
+  #     arrange(DateTime) %>%
+  #     select(Date, Time, Height) %>%
+  #     setNames(c("Date", "Time", unitLabel()))
+  #   
+  #   data
+  # })
   
   ### when click on map or search site
   observeEvent(c(input$map_marker_click, input$search_site),
@@ -267,12 +267,19 @@ function(input, output, session) {
                  removeModal()})
   
   observeEvent(input$feedback,
-               {showModal(modalDialog(title = "Please fill out fields and submit.", 
+               {showModal(modalDialog(title = "", 
                                       size = "m", easyClose = T,
+                                      footer = modalButton("Got it"),
                                         textInput("name", "Name (optional):", width = "30%"),
                                         textInput("email", "Email (optional):", width = "30%"),
                                         textInput("comment", labelMandatory("Comment:"), width = "80%"),
                                         actionButton("submit_feedback", "Submit")))})
+  
+  observeEvent(input$disclaimer,
+               {showModal(modalDialog("This is a disclaimer",
+                                      size = "m", easyClose = T,
+                                      footer = modalButton("Got it")))
+                                      })
   
   ### csv download
     output$download <- downloadHandler(
