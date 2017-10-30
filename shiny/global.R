@@ -20,9 +20,9 @@ helpers <- 'helpers/'
 feedback_folder <- "Shiny/rtide/feedback/"
 
 initial_lat <- 43.6157777
-initial_long <- -90.311505
+initial_long <- -86.311505
 initial_zoom <- 3
-click_zoom <- 10
+click_zoom <- 11
 
 sites <- rtide::harmonics$Station %>%
   ps_longlat_to_sfc() %>%

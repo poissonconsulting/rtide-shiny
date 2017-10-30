@@ -47,7 +47,7 @@ fluidPage(
                                                        dateInput("from", "From:", format = "M d, yyyy")
                                                 ),
                                                 column(4,
-                                                       dateInput("to", "To:", format = "M d, yyyy", value = Sys.Date() + 7)
+                                                       dateInput("to", "To:", format = "M d, yyyy", value = Sys.Date() + 2)
                                                 ),
                                                 column(4,
                                                        numericInput("interval", "Interval (minutes):", value = 10, min = 0, max = 60, step = 5)

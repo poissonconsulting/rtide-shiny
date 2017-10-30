@@ -11,7 +11,7 @@ function(input, output, session) {
         setView(lat = initial_lat, lng = initial_long, zoom = initial_zoom) %>%
         
         addEasyButton(easyButton(icon = "ion-arrow-shrink",
-                                 title = "Reset View", onClick = JS("function(btn, map){ map.setView(new L.LatLng(40.6157777, -127.311505), 3, { animation: true });}"))) %>%
+                                 title = "Reset View", onClick = JS("function(btn, map){ map.setView(new L.LatLng(43.6157777, -86.311505), 3, { animation: true });}"))) %>%
 
         leaflet::addProviderTiles("CartoDB.Positron", options = providerTileOptions(opacity = 1), group = "Basemap") %>%
         leaflet::addProviderTiles("Esri.WorldImagery", options = providerTileOptions(opacity = 1), group = "Satelite") %>%
@@ -35,28 +35,13 @@ function(input, output, session) {
         
         leaflet::addMiniMap(position = "bottomleft",
                             zoomLevelOffset = -8,
-                            # centerFixed = c(initial_lat, initial_long),
                             toggleDisplay = T,
                             autoToggleDisplay = T,
                             tiles = "CartoDB.Positron") 
     })
   })
   
-  ### when map click or search site
-  location <- reactiveValues(loc = NULL)
-  
-  observeEvent(input$map_marker_click, {
-    click <- input$map_marker_click
-    loc <- c(click$lng, click$lat)           
-    location$loc <- loc})
-  
-  observeEvent(input$search_site, {
-    station <- input$search_site
-    lng <- filter(sites, Station == station)$X
-    lat <- filter(sites, Station == station)$Y
-    loc <- c(lng, lat)       
-    location$loc <- loc})
-  
+ ############ Reactives ------
   # filter data
   filterData <- reactive({
     loc <- location$loc
@@ -160,10 +145,6 @@ function(input, output, session) {
     })
   }
   
-  observe({
-    shinyjs::toggleState(id = "submit_feedback", condition = input$comment)
-  })
-  
   # metrics
   # tidePlot <- reactive({
   #  dat <- tideData()
@@ -174,7 +155,7 @@ function(input, output, session) {
   #  gp
   # })
   
-  ### plots/tables
+  ############ outputs -------
   # dygraph
   tidePlot <- reactive({
     dat <- tideData()
@@ -235,29 +216,55 @@ function(input, output, session) {
   #   data
   # })
   
-  ### when click on map or search site
+  ############ Observers ------
+  
+  # submit after comment
+  observe({
+    shinyjs::toggleState(id = "submit_feedback", condition = input$comment)
+  })
+  
+  # get location of site from search or click
+  location <- reactiveValues(loc = NULL)
+  
+  observeEvent(input$map_marker_click, {
+    click <- input$map_marker_click
+    loc <- c(click$lng, click$lat)           
+    location$loc <- loc})
+  
+  observeEvent(input$search_site, {
+    station <- input$search_site
+    lng <- filter(sites, Station == station)$X
+    lat <- filter(sites, Station == station)$Y
+    loc <- c(lng, lat)       
+    location$loc <- loc})
+  
+  # zoom to site on click or search
   observeEvent(c(input$map_marker_click, input$search_site),
                {leafletProxy('map') %>%
                    setView(lat = location$loc[2], lng = location$loc[1] + 0.12, zoom = click_zoom)})
   
+  # render label
   observeEvent(c(input$map_marker_click, input$search_site),
                {output$station_title <- renderText({stationLabel()})})
   
+  # plot
   observeEvent(c(input$map_marker_click, input$search_site),
                {output$tide_plot <- renderDygraph({
                  tidePlot()
                })})
   
+  # table
   observeEvent(c(input$map_marker_click, input$search_site),
                {output$tide_table <- DT::renderDataTable({
                  tideTable()
                })})
+  # 
+  # observeEvent(c(input$map_marker_click, input$search_site),
+  #              {output$daily_table <- DT::renderDataTable({
+  #                dailyTable()
+  #              })})
   
-  observeEvent(c(input$map_marker_click, input$search_site),
-               {output$daily_table <- DT::renderDataTable({
-                 dailyTable()
-               })})
-  
+  # submit feeback to dropbox
   observeEvent(input$submit_feedback,
                {uploadData(feedbackData())
                  removeModal()})
@@ -271,10 +278,10 @@ function(input, output, session) {
                                         textInput("comment", labelMandatory("Comment:"), width = "100%"),
                                         actionButton("submit_feedback", "Submit")))})
   
+  # information
   observeEvent(input$information,
                {showModal(modalDialog("Tide predictions are generated using the rtide R package and are not suitable for navigation. 
-                                      For more information about rtide, see https://github.com/poissonconsulting/rtide.
-                                      To view code used to create this shiny app, see https://github.com/poissonconsulting/rtide.",
+                                      For more information about rtide, see https://github.com/poissonconsulting/rtide.",
                                       size = "m", easyClose = T,
                                       footer = modalButton("Got it")))
                                       })
