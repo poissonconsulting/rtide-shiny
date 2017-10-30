@@ -272,11 +272,11 @@ function(input, output, session) {
                                       footer = modalButton("Got it"),
                                         textInput("name", "Name (optional):", width = "30%"),
                                         textInput("email", "Email (optional):", width = "30%"),
-                                        textInput("comment", labelMandatory("Comment:"), width = "80%"),
+                                        textInput("comment", labelMandatory("Comment:"), width = "100%"),
                                         actionButton("submit_feedback", "Submit")))})
   
-  observeEvent(input$disclaimer,
-               {showModal(modalDialog("This is a disclaimer",
+  observeEvent(input$information,
+               {showModal(modalDialog("Tide predictions are generated using the rtide R package and are not suitable for navigation. For more information, see https://github.com/poissonconsulting/rtide.",
                                       size = "m", easyClose = T,
                                       footer = modalButton("Got it")))
                                       })
