@@ -62,7 +62,7 @@ fluidPage(
                                             # tabPanel(title = "Daily Low/High",
                                             #          br(),
                                             #          DT::dataTableOutput('daily_table'))),
-                                          ), br(),
+                                          ), 
                                  actionLink("information", label = "", icon = icon('info-circle')),
                                           style = "overflow-x:scroll"
                                  )

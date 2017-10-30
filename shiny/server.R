@@ -68,7 +68,6 @@ function(input, output, session) {
   stationLabel <- reactive({
     loc <- location$loc
     label <- filter(sites, X == loc[1] & Y == loc[2])$Station
-    print(label)
   })
   
   prettyLabel <- reactive({
@@ -121,9 +120,7 @@ function(input, output, session) {
   
   downloadData <- reactive({
     data <- tideData()
-    
     data %<>% mutate(DateTime = as.character(DateTime))
-    
     if(input$units){data %<>% setNames(c("Station", "DateTime", "TideHeight_m", "TimeZone"))} else {
       data %<>% setNames(c("Station", "DateTime", "TideHeight_ft", "TimeZone"))
     }
@@ -138,7 +135,6 @@ function(input, output, session) {
   })
   
   uploadData <- function(df){
-    
     withProgress(message = "Sending to administrator...", value = 0, {
       incProgress(amount = .25)
       time <- as.integer(Sys.time())
@@ -154,15 +150,13 @@ function(input, output, session) {
       incProgress(amount = .75)
       
       # send email
-      message <- gmailr::mime(From = fromadd,
-                              To = toadd,
-                              Subject = "Shiny upload: rtide app feedback",
-                              body = "Feedback has been submitted by a user of the rtide shiny app. Check '~/Poisson/Shiny/rtide/feedback/' dropbox folder to view csv.")
-      
-      gmailr::send_message(message)
-      incProgress(amount = 1)
-      
-
+      # message <- gmailr::mime(From = fromadd,
+      #                         To = toadd,
+      #                         Subject = "Shiny upload: rtide app feedback",
+      #                         body = "Feedback has been submitted by a user of the rtide shiny app. Check '~/Poisson/Shiny/rtide/feedback/' dropbox folder to view csv.")
+      # 
+      # gmailr::send_message(message)
+      # incProgress(amount = 1)
     })
   }
   
@@ -184,7 +178,9 @@ function(input, output, session) {
   # dygraph
   tidePlot <- reactive({
     dat <- tideData()
-
+    time <- Sys.time()
+    time %<>% lubridate::with_tz(tz = dat$TimeZone[1])
+    
     pad <- (max(dat$TideHeight) - min(dat$TideHeight))/7
     padrange <- c(min(dat$TideHeight) - pad, max(dat$TideHeight) + pad)
               
@@ -198,8 +194,8 @@ function(input, output, session) {
                 useDataTimezone = T, drawGapEdgePoints = T, rightGap = 0) %>%
       dyRangeSelector() %>%
       dyAxis("y", valueRange = padrange,
-             label = unitLabel())
-
+             label = unitLabel()) %>%
+      dyEvent(x = time, label = "Current time", labelLoc = "bottom")
   })
   
   tideTable <- reactive({
@@ -276,7 +272,9 @@ function(input, output, session) {
                                         actionButton("submit_feedback", "Submit")))})
   
   observeEvent(input$information,
-               {showModal(modalDialog("Tide predictions are generated using the rtide R package and are not suitable for navigation. For more information, see https://github.com/poissonconsulting/rtide.",
+               {showModal(modalDialog("Tide predictions are generated using the rtide R package and are not suitable for navigation. 
+                                      For more information about rtide, see https://github.com/poissonconsulting/rtide.
+                                      To view code used to create this shiny app, see https://github.com/poissonconsulting/rtide.",
                                       size = "m", easyClose = T,
                                       footer = modalButton("Got it")))
                                       })
