@@ -139,7 +139,7 @@ function(input, output, session) {
   
   uploadData <- function(df){
     
-    withProgress(message = "Sending to administrator", value = 0, {
+    withProgress(message = "Sending to administrator...", value = 0, {
       incProgress(amount = .25)
       time <- as.integer(Sys.time())
       # Create a unique file name
