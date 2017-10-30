@@ -23,10 +23,10 @@ library(highcharter)
 helpers <- 'helpers/'
 parent <- "Shiny/horse-exploit-upload"
 
-initial_lat <- 40.6157777
-initial_long <- -127.311505
+initial_lat <- 35.6157777
+initial_long <- -94.311505
 initial_zoom <- 3
-click_zoom <- 11
+click_zoom <- 9
 
 sites <- rtide::harmonics$Station %>%
   ps_longlat_to_sfc() %>%

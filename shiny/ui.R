@@ -40,7 +40,14 @@ fluidPage(
                                           #       column(5,
                                           #              materialSwitch(inputId = "unit_conversion", label  = "Low/high", inline = T))
                                           #       )),
-                                 downloadButton(outputId = "download", label = "csv"),
+                                 div(id = "top_row",
+                                     fluidRow(
+                                       column(2,
+                                              downloadButton(outputId = "download", label = "csv")),
+                                       column(2, 
+                                              shinyWidgets::switchInput("units", label = "Units", onLabel = "m", 
+                                                                        offLabel = "ft", value = T, size = "mini"))
+                                     )),
                                  
                                           h4(textOutput('station_title')),
                                           
@@ -69,7 +76,8 @@ fluidPage(
                                                      #                       selected = "Meters", inline = T)
                                                      #   )),
                                                      # br(),  br(),
-                                                     dygraphOutput("tide_plot")),
+                                                     
+                                                     dygraphOutput("tide_plot", height = "375px")),
                                             tabPanel(title = "Table",
                                                      br(),
                                                      # fluidRow(

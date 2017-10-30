@@ -57,18 +57,18 @@ function(input, output, session) {
     loc <- c(lng, lat)       
     location$loc <- loc})
   
-  # update station label in panel
-  stationLabel <- reactive({
-    loc <- location$loc
-    label <- filter(sites, X == loc[1] & Y == loc[2])$Station
-    print(label)
-  })
-  
-  # create plotly graph
+  # filter data
   filterData <- reactive({
     loc <- location$loc
     data <- filter(sites, X == round(loc[1], 4) & Y == round(loc[2], 4))
     data
+  })
+  
+  ### reactive labels
+  stationLabel <- reactive({
+    loc <- location$loc
+    label <- filter(sites, X == loc[1] & Y == loc[2])$Station
+    print(label)
   })
   
   prettyLabel <- reactive({
@@ -78,6 +78,12 @@ function(input, output, session) {
     label
   })
   
+  unitLabel <- reactive({
+    if(input$units) { u <- "Tide Height (m)"} else {u <- "Tide Height (ft)"}
+    u
+  })
+  
+  ### Tide data
   tideData <- reactive({
     req(location$loc)
     filt <- filterData()
@@ -90,6 +96,12 @@ function(input, output, session) {
     
     data$TideHeight %<>% round(2)
     data$TimeZone <- tz
+    
+    if(input$units){
+      data  <- data
+    } else {
+      data %<>% mutate(TideHeight = round(TideHeight * 3.3333, 2)) 
+    }
     
     data
   })
@@ -107,6 +119,17 @@ function(input, output, session) {
     
   })
   
+  downloadData <- reactive({
+    data <- tideData()
+    
+    data %<>% mutate(DateTime = as.character(DateTime))
+    
+    if(input$units){data %<>% setNames(c("Station", "DateTime", "TideHeight_m", "TimeZone"))} else {
+      data %<>% setNames(c("Station", "DateTime", "TideHeight_ft", "TimeZone"))
+    }
+    data
+  })
+  
   # metrics
   # tidePlot <- reactive({
   #  dat <- tideData()
@@ -117,6 +140,7 @@ function(input, output, session) {
   #  gp
   # })
   
+  ### plots/tables
   # dygraph
   tidePlot <- reactive({
     dat <- tideData()
@@ -135,7 +159,7 @@ function(input, output, session) {
                 useDataTimezone = T, drawGapEdgePoints = T, rightGap = 0) %>%
       dyRangeSelector() %>%
       dyAxis("y", valueRange = c(min(dat$`Tide Height`) - pad, max(dat$`Tide Height`) + pad),
-             label = "Tide Height (m)")
+             label = unitLabel())
 
   })
   
@@ -162,11 +186,11 @@ function(input, output, session) {
                     Minute = lapply(strsplit(as.character(Time2), ":"), "[", 2) %>% unlist()) %>%
       dplyr::mutate(Time = paste0(Hour, ":", Minute),
                     Date = paste0(Month, " ", Day, ", ", Year)) %>%
-      dplyr::select(Date, Time, `Height (m)` = TideHeight)
+      dplyr::select(Date, Time, TideHeight) %>%
+      setNames(c("Date", "Time", unitLabel()))
     
     data
   })
-  
   
   dailyTable <- reactive({
     data <- dailyData() 
@@ -183,15 +207,16 @@ function(input, output, session) {
       group_by(Date, Height) %>%
       slice(1) %>%
       arrange(DateTime) %>%
-      select(Date, Time, `Height (m)` = Height) 
-      
+      select(Date, Time, Height) %>%
+      setNames(c("Date", "Time", unitLabel()))
+    
     data
   })
   
   ### when click on map or search site
   observeEvent(c(input$map_marker_click, input$search_site),
                {leafletProxy('map') %>%
-                   setView(lat = location$loc[2], lng = location$loc[1], zoom = click_zoom)})
+                   setView(lat = location$loc[2], lng = location$loc[1] + 0.12, zoom = click_zoom)})
   
   observeEvent(c(input$map_marker_click, input$search_site),
                {output$station_title <- renderText({stationLabel()})})
@@ -211,15 +236,15 @@ function(input, output, session) {
                  dailyTable()
                })})
   
-  #   output$download <- downloadHandler(
-  #     filename = function() {
-  #       paste0(prettyLabel(), "_", fromDate(), "_", toDate(), ".csv")
-  #     },
-  #     content <- function(file) {
-  #       readr::write_csv(tideData(), file)
-  #     }
-  #   )
-  # }
+    output$download <- downloadHandler(
+      filename = function() {
+        paste0(prettyLabel(), "_", gsub("-", "", as.character(input$from)), "_", gsub("-", "", as.character(input$to)), ".csv")
+      },
+      content <- function(file) {
+        readr::write_csv(downloadData(), file)
+      }
+    )
+}
 
   
   ### download
@@ -231,7 +256,7 @@ function(input, output, session) {
   #       readr::write_csv(tideData(), file)
   #     }
   #   )
-}
+
 
 
 
