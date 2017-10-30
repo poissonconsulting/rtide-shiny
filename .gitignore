@@ -2,3 +2,8 @@
 .Rhistory
 .RData
 .Ruserdata
+
+.httr-oauth
+
+shiny/helpers/droptoken.rds
+shiny/helpers/poisson-shiny-mail-auth.json

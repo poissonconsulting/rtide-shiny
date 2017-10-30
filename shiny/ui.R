@@ -1,5 +1,6 @@
 fluidPage(
-  useShinyjs(),
+  shinyjs::useShinyjs(),
+  shinyjs::inlineCSS(appCSS),
   tags$head(
     # Include custom CSS
     includeCSS("style.css")
@@ -32,9 +33,11 @@ fluidPage(
                                      fluidRow(
                                        column(2,
                                               downloadButton(outputId = "download", label = "csv")),
-                                       column(2, 
+                                       column(7, 
                                               shinyWidgets::switchInput("units", label = "Units", onLabel = "m", 
-                                                                        offLabel = "ft", value = T, size = "mini"))
+                                                                        offLabel = "ft", value = T, size = "mini")),
+                                       column(3,
+                                              actionLink("feedback", label = "Feedback?"))
                                      )),
                                  h4(textOutput('station_title')),
                                           
@@ -61,6 +64,7 @@ fluidPage(
                                                      DT::dataTableOutput('daily_table'))),
                                           style = "overflow-x:scroll"
                                  )
+
                    )
                    
   

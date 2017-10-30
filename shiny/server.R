@@ -130,6 +130,46 @@ function(input, output, session) {
     data
   })
   
+  feedbackData <- reactive({
+    data <- data.frame(Name = input$name,
+                       Email = input$email,
+                       Comment = input$comment)
+    data
+  })
+  
+  uploadData <- function(df){
+    
+    withProgress(message = "Sending to administrator", value = 0, {
+      incProgress(amount = .25)
+      time <- as.integer(Sys.time())
+      # Create a unique file name
+      file_name <- paste0("rtide-shiny-feedback-", time, "-", digest::digest(df), ".csv")
+
+      # Write the data to a temporary file locally
+      file_path <- file.path(tempdir(), file_name)
+      readr::write_csv(df, path = file_path)
+      
+      # Upload the files to Dropbox
+      rdrop2::drop_upload(file_path, path = feedback_folder, dtoken = token)
+      incProgress(amount = .75)
+      
+      # send email
+      message <- gmailr::mime(From = fromadd,
+                              To = toadd,
+                              Subject = "Shiny upload: rtide app feedback",
+                              body = "Feedback has been submitted by a user of the rtide shiny app. Check '~/Poisson/Shiny/rtide/feedback/' dropbox folder to view csv.")
+      
+      gmailr::send_message(message)
+      incProgress(amount = 1)
+      
+
+    })
+  }
+  
+  observe({
+    shinyjs::toggleState(id = "submit_feedback", condition = input$comment)
+  })
+  
   # metrics
   # tidePlot <- reactive({
   #  dat <- tideData()
@@ -144,37 +184,23 @@ function(input, output, session) {
   # dygraph
   tidePlot <- reactive({
     dat <- tideData()
-    # if(input$unit_conversion == T){
-    #   dat %<>% mutate(TideHeight = TideHeight * 2.2)
-    #   dat
-    # } else dat <- dat
 
     pad <- (max(dat$TideHeight) - min(dat$TideHeight))/7
+    padrange <- c(min(dat$TideHeight) - pad, max(dat$TideHeight) + pad)
+              
 
-    dat %<>% select(`Tide Height` = TideHeight, `Date-Time` = DateTime)
+    dat %<>% select(TideHeight, DateTime) %>%
+      setNames(c(unitLabel(), "Date-Time"))
     xtsdat <- xts::xts(dat, order.by = dat$`Date-Time`)
 
     dygraph(xtsdat, height = "10px") %>%
       dyOptions(strokeWidth = 1.5, drawGrid = F, includeZero = F,
                 useDataTimezone = T, drawGapEdgePoints = T, rightGap = 0) %>%
       dyRangeSelector() %>%
-      dyAxis("y", valueRange = c(min(dat$`Tide Height`) - pad, max(dat$`Tide Height`) + pad),
+      dyAxis("y", valueRange = padrange,
              label = unitLabel())
 
   })
-  
-  # # highcharts
-  # tidePlot <- reactive({
-  #   dat <- tideData() 
-  #   
-  #   pad <- (max(dat$TideHeight) - min(dat$TideHeight))/7
-  #   
-  #   # dat %<>% select(`Tide Height` = TideHeight, `Date-Time` = DateTime)
-  #   
-  #   hc <- highchart() %>%
-  #     hc_add_series_df(data = dat, type = "line", aes(x  = DateTime, y = TideHeight))
-  #   
-  # })
   
   tideTable <- reactive({
     data <- tideData() %>%
@@ -236,6 +262,19 @@ function(input, output, session) {
                  dailyTable()
                })})
   
+  observeEvent(input$submit_feedback,
+               {uploadData(feedbackData())
+                 removeModal()})
+  
+  observeEvent(input$feedback,
+               {showModal(modalDialog(title = "Please fill out fields and submit.", 
+                                      size = "m", easyClose = T,
+                                        textInput("name", "Name (optional):", width = "30%"),
+                                        textInput("email", "Email (optional):", width = "30%"),
+                                        textInput("comment", labelMandatory("Comment:"), width = "80%"),
+                                        actionButton("submit_feedback", "Submit")))})
+  
+  ### csv download
     output$download <- downloadHandler(
       filename = function() {
         paste0(prettyLabel(), "_", gsub("-", "", as.character(input$from)), "_", gsub("-", "", as.character(input$to)), ".csv")
@@ -246,16 +285,7 @@ function(input, output, session) {
     )
 }
 
-  
-  ### download
-  #   output$download <- downloadHandler(
-  #     filename = function() {
-  #       paste0(prettyLabel(), "_", fromDate(), "_", toDate(), ".csv")
-  #     },
-  #     content <- function(file) {
-  #       readr::write_csv(tideData(), file)
-  #     }
-  #   )
+
 
 
 

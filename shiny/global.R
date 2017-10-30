@@ -11,22 +11,18 @@ library(magrittr)
 library(leaflet)
 library(rtide)
 library(poisspatial)
-library(leaflet.extras)
-library(plotly)
 library(scales)
 library(DT)
 library(shinyWidgets)
-library(metricsgraphics)
 library(dygraphs)
-library(highcharter)
 
 helpers <- 'helpers/'
-parent <- "Shiny/horse-exploit-upload"
+feedback_folder <- "Shiny/rtide/feedback/"
 
-initial_lat <- 35.6157777
-initial_long <- -94.311505
+initial_lat <- 43.6157777
+initial_long <- -90.311505
 initial_zoom <- 3
-click_zoom <- 9
+click_zoom <- 10
 
 sites <- rtide::harmonics$Station %>%
   ps_longlat_to_sfc() %>%
@@ -37,7 +33,18 @@ sites <- rtide::harmonics$Station %>%
 source(paste0(helpers, 'functions.R'), local = T)
 source(paste0(helpers, 'auth.R'), local = T)
 
+token <- readRDS("helpers/droptoken.rds")
 
+fromadd <- "shinypoisson@gmail.com"
+toadd <- "seb@poissonconsulting.ca"
+
+labelMandatory <- function(label) {
+  tagList(
+    label,
+    span("*", class = "mandatory_star")
+  )
+}
+appCSS <- ".mandatory_star { color: red; }"
 
 
 
