@@ -57,6 +57,19 @@ function(input, output, session) {
     loc <- c(lng, lat)       
     location$loc <- loc})
   
+  ### dynamic download button
+  output$download1 <- renderUI({
+    downloadButton("down1", "png")
+  })
+  
+  output$download2 <- renderUI({
+    downloadButton("down2", "csv")
+  })
+  
+  output$download3 <- renderUI({
+    downloadButton("down3", "csv")
+  })
+  
   # filter data
   filterData <- reactive({
     loc <- location$loc
@@ -104,22 +117,20 @@ function(input, output, session) {
     }
     
     data
+
   })
   
   dailyData <- reactive({
     data <- tideData()
     
-    high <- data[find_peaks(data$TideHeight, m = 3), c("DateTime","TideHeight")] %>%
-      setNames(c("DateTime", "Height"))
-    
-    low <- data[find_peaks(-data$TideHeight, m = 3), c("DateTime","TideHeight")] %>%
-      setNames(c("DateTime", "Height"))
-    
+    high <- data[find_peaks(data$TideHeight, m = 3), c("Station", "DateTime", "TideHeight", "TimeZone")] 
+    low <- data[find_peaks(-data$TideHeight, m = 3), c("Station", "DateTime", "TideHeight", "TimeZone")] 
     daily <- rbind(high, low)
-    
   })
   
-  downloadData <- reactive({
+  ### create download csv datasets
+  # all data
+  download2Data <- reactive({
     data <- tideData()
     
     data %<>% mutate(DateTime = as.character(DateTime))
@@ -130,6 +141,26 @@ function(input, output, session) {
     data
   })
   
+  # daily low/high
+  download3Data <- reactive({
+    data <- dailyData()
+    
+    data %<>% mutate(Date = lubridate::date(DateTime)) %>%
+      group_by(Date, TideHeight) %>%
+      arrange(DateTime) %>%
+      slice(1) %>%
+      ungroup() %>%
+      arrange(DateTime) %>%
+      select(-Date)
+    
+
+    if(input$units){data %<>% setNames(c("Station", "DateTime", "TideHeight_m", "TimeZone"))} else {
+      data %<>% setNames(c("Station", "DateTime", "TideHeight_ft", "TimeZone"))
+    }
+    data
+  })
+  
+  ### generate data.frame from user-submitted form
   feedbackData <- reactive({
     data <- data.frame(Name = input$name,
                        Email = input$email,
@@ -137,6 +168,7 @@ function(input, output, session) {
     data
   })
   
+  ### upload feedbackdata() to dropbox
   uploadData <- function(df){
     
     withProgress(message = "Sending to administrator...", value = 0, {
@@ -166,19 +198,11 @@ function(input, output, session) {
     })
   }
   
+  # only allow form submission when comments field is filled out
   observe({
     shinyjs::toggleState(id = "submit_feedback", condition = input$comment)
   })
   
-  # metrics
-  # tidePlot <- reactive({
-  #  dat <- tideData()
-  # 
-  #  gp <- mjs_plot(data = dat, x = DateTime, y = TideHeight, height = 10, left = 10, top = 0) %>%
-  #    mjs_line() %>%
-  #    mjs_labs(y = "Tide Height (m)")
-  #  gp
-  # })
   
   ### plots/tables
   # dygraph
@@ -225,13 +249,15 @@ function(input, output, session) {
                      Month = lubridate::month(DateTime, label = T, abbr = T),
                      Day = lubridate::day(DateTime),
                      Time2 = lapply(strsplit(as.character(DateTime), " "), "[", 2) %>% unlist(),
-                     Height = round(Height, 2)) %>%
+                     Height = round(TideHeight, 2)) %>%
       dplyr::mutate(Hour = lapply(strsplit(as.character(Time2), ":"), "[", 1) %>% unlist(),
                     Minute = lapply(strsplit(as.character(Time2), ":"), "[", 2) %>% unlist()) %>%
       mutate(Time = paste0(Hour, ":", Minute),
              Date = paste0(Month, " ", Day, ", ", Year)) %>%
       group_by(Date, Height) %>%
+      arrange(DateTime) %>%
       slice(1) %>%
+      ungroup() %>%
       arrange(DateTime) %>%
       select(Date, Time, Height) %>%
       setNames(c("Date", "Time", unitLabel()))
@@ -274,13 +300,34 @@ function(input, output, session) {
                                         textInput("comment", labelMandatory("Comment:"), width = "80%"),
                                         actionButton("submit_feedback", "Submit")))})
   
-  ### csv download
-    output$download <- downloadHandler(
+  
+  ### png plot download
+    output$down1 <- downloadHandler(
       filename = function() {
         paste0(prettyLabel(), "_", gsub("-", "", as.character(input$from)), "_", gsub("-", "", as.character(input$to)), ".csv")
       },
       content <- function(file) {
         readr::write_csv(downloadData(), file)
+      }
+    )
+  
+  ### csv all data download
+    output$down2 <- downloadHandler(
+      filename = function() {
+        paste0(prettyLabel(), "_", gsub("-", "", as.character(input$from)), "_", gsub("-", "", as.character(input$to)), ".csv")
+      },
+      content <- function(file) {
+        readr::write_csv(download2Data(), file)
+      }
+    )
+    
+  ### csv low/high download
+    output$down3 <- downloadHandler(
+      filename = function() {
+        paste0("DailyLowHigh", "_", prettyLabel(), "_", gsub("-", "", as.character(input$from)), "_", gsub("-", "", as.character(input$to)), ".csv")
+      },
+      content <- function(file) {
+        readr::write_csv(download3Data(), file)
       }
     )
 }
