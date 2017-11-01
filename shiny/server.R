@@ -172,7 +172,7 @@ function(input, output, session) {
 
     dygraph(xtsdat, height = "10px") %>%
       dyOptions(strokeWidth = 1.5, drawGrid = F, includeZero = F,
-                useDataTimezone = T, drawGapEdgePoints = T, rightGap = 0) %>%
+                useDataTimezone = T, drawGapEdgePoints = T, rightGap = 15) %>%
       dyRangeSelector() %>%
       dyAxis("y", valueRange = padrange,
              label = unitLabel()) %>%
