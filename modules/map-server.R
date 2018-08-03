@@ -166,10 +166,10 @@ map <- function(input, output, session) {
     location$loc <- loc
     })
 
-  # zoom to site on click or search
-  observeEvent(c(input$leaflet_marker_click, input$search),
-               {leafletProxy('leaflet') %>%
-                   setView(lat = location$loc[2], lng = location$loc[1] + 0.12, zoom = click_zoom)})
+  # # zoom to site on click or search
+  # observeEvent(c(input$leaflet_marker_click, input$search),
+  #              {leafletProxy('leaflet') %>%
+  #                  setView(lat = location$loc[2], lng = location$loc[1] + 0.12, zoom = click_zoom)})
 
   # render label
   observeEvent(c(input$leaflet_marker_click, input$search),
