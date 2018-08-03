@@ -9,6 +9,7 @@ aboutUI <- function(id, label = 'About') {
            br(),
            p("This app was not designed for use on a mobile."),
            br(),
+           h5(disclaimer),
            h5(proj.description), hr(),
            actionLink(ns("info1"), "About the package"),
            hidden(div(id = ns("div1"),  h6("info here"))), 
