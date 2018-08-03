@@ -1,0 +1,293 @@
+map <- function(input, output, session) {
+  ns <- session$ns
+ 
+  output$leaflet <- leaflet::renderLeaflet({
+    leaflet() %>%
+      
+      setView(lat = initial_lat, lng = initial_long, zoom = initial_zoom) %>%
+      
+      addEasyButton(easyButton(icon = "ion-arrow-shrink",
+                               title = "Reset View", onClick = JS(paste0("function(btn, map){ map.setView(new L.LatLng(", initial_lat, ", ", initial_long, "), ", initial_zoom, ", { animation: true });}")))) %>%
+      
+      addProviderTiles("Esri.WorldImagery", options = providerTileOptions(opacity = 1), group = "Satelite") %>%
+      addTiles(urlTemplate = mapbox_moon, group = "Basemap") %>%
+
+      addLayersControl(
+        baseGroups = c("Basemap", "Satelite"),
+        options = layersControlOptions(collapsed = TRUE),
+        position = leaf.pos) %>%
+      leaflet::addMarkers(
+        data = sites,
+        lng = sites$X, lat = sites$Y,
+        label = sites$Station,
+        icon = makeIcon(
+          iconUrl = "input/marker1.png",
+          iconWidth = 30, iconHeight = 30
+        ),
+        group = 'sites',
+        clusterOptions = markerClusterOptions(showCoverageOnHover = F)
+        ) 
+      
+      # leaflet::addMiniMap(position = "bottomleft",
+      #                     zoomLevelOffset = -8,
+      #                     toggleDisplay = T, 
+      #                     autoToggleDisplay = T, aimingRectOptions = list(weight = 1),
+      #                     tiles =  mapbox_moon)  %>%
+      
+  })
+
+# ############ Reactives ------
+# # filter data
+# filterData <- reactive({
+#   loc <- location$loc
+#   data <- filter(sites, X == round(loc[1], 4) & Y == round(loc[2], 4))
+#   data
+# })
+# 
+# ### reactive labels
+# stationLabel <- reactive({
+#   loc <- location$loc
+#   label <- filter(sites, X == loc[1] & Y == loc[2])$Station
+# })
+# 
+# prettyLabel <- reactive({
+#   station <- filterData()$Station
+#   label <- strsplit(station, ",")[[1]][1] %>%
+#     sub(" ", "", .)
+#   label
+# })
+# 
+# unitLabel <- reactive({
+#   if(input$units) { u <- "Tide Height (m)"} else {u <- "Tide Height (ft)"}
+#   u
+# })
+# 
+# ### Tide data
+# tideData <- reactive({
+#   req(location$loc)
+#   filt <- filterData()
+#   label <- filt$Station
+#   tz <- filt$TZ
+#   
+#   data <- rtide::tide_height(
+#     label, from = input$from, to = input$to, 
+#     minutes = input$interval, tz = tz)
+#   
+#   data$TideHeight %<>% round(2)
+#   data$TimeZone <- tz
+#   
+#   if(input$units){
+#     data  <- data
+#   } else {
+#     data %<>% mutate(TideHeight = round(TideHeight * 3.3333, 2)) 
+#   }
+#   
+#   data
+# })
+# 
+# # dailyData <- reactive({
+# #   data <- tideData()
+# #   
+# #   high <- data[find_peaks(data$TideHeight, m = 3), c("DateTime","TideHeight")] %>%
+# #     setNames(c("DateTime", "Height"))
+# #   
+# #   low <- data[find_peaks(-data$TideHeight, m = 3), c("DateTime","TideHeight")] %>%
+# #     setNames(c("DateTime", "Height"))
+# #   
+# #   daily <- rbind(high, low)
+# #   
+# # })
+# 
+# downloadData <- reactive({
+#   data <- tideData()
+#   data %<>% mutate(DateTime = as.character(DateTime))
+#   if(input$units){data %<>% setNames(c("Station", "DateTime", "TideHeight_m", "TimeZone"))} else {
+#     data %<>% setNames(c("Station", "DateTime", "TideHeight_ft", "TimeZone"))
+#   }
+#   data
+# })
+# 
+# feedbackData <- reactive({
+#   data <- data.frame(Name = input$name,
+#                      Email = input$email,
+#                      Comment = input$comment)
+#   data
+# })
+# 
+# uploadData <- function(df){
+#   withProgress(message = "Sending to administrator...", value = 0, {
+#     incProgress(amount = .25)
+#     time <- as.integer(Sys.time())
+#     # Create a unique file name
+#     file_name <- paste0("rtide-shiny-feedback-", time, "-", digest::digest(df), ".csv")
+#     
+#     # Write the data to a temporary file locally
+#     file_path <- file.path(tempdir(), file_name)
+#     readr::write_csv(df, path = file_path)
+#     
+#     # Upload the files to Dropbox
+#     rdrop2::drop_upload(file_path, path = feedback_folder, dtoken = token)
+#     incProgress(amount = .75)
+#     
+#     # send email
+#     # message <- gmailr::mime(From = fromadd,
+#     #                         To = toadd,
+#     #                         Subject = "Shiny upload: rtide app feedback",
+#     #                         body = "Feedback has been submitted by a user of the rtide shiny app. Check '~/Poisson/Shiny/rtide/feedback/' dropbox folder to view csv.")
+#     # 
+#     # gmailr::send_message(message)
+#     # incProgress(amount = 1)
+#   })
+# }
+# 
+# # metrics
+# # tidePlot <- reactive({
+# #  dat <- tideData()
+# # 
+# #  gp <- mjs_plot(data = dat, x = DateTime, y = TideHeight, height = 10, left = 10, top = 0) %>%
+# #    mjs_line() %>%
+# #    mjs_labs(y = "Tide Height (m)")
+# #  gp
+# # })
+# 
+# ############ outputs -------
+# # dygraph
+# tidePlot <- reactive({
+#   dat <- tideData()
+#   time <- Sys.time()
+#   time %<>% lubridate::with_tz(tz = dat$TimeZone[1])
+#   
+#   pad <- (max(dat$TideHeight) - min(dat$TideHeight))/7
+#   padrange <- c(min(dat$TideHeight) - pad, max(dat$TideHeight) + pad)
+#   
+#   
+#   dat %<>% select(TideHeight, DateTime) %>%
+#     setNames(c(unitLabel(), "Date-Time"))
+#   xtsdat <- xts::xts(dat, order.by = dat$`Date-Time`)
+#   
+#   dygraph(xtsdat, height = "10px") %>%
+#     dyOptions(strokeWidth = 1.5, drawGrid = F, includeZero = F,
+#               useDataTimezone = T, drawGapEdgePoints = T, rightGap = 15) %>%
+#     dyRangeSelector() %>%
+#     dyAxis("y", valueRange = padrange,
+#            label = unitLabel()) %>%
+#     dyEvent(x = time, label = "Current time", labelLoc = "bottom")
+# })
+# 
+# tideTable <- reactive({
+#   data <- tideData() %>%
+#     dplyr::mutate(Year = lubridate::year(DateTime),
+#                   Month = lubridate::month(DateTime, label = T, abbr = T),
+#                   Day = lubridate::day(DateTime),
+#                   Time2 = lapply(strsplit(as.character(DateTime), " "), "[", 2) %>% unlist()) %>%
+#     dplyr::mutate(Hour = lapply(strsplit(as.character(Time2), ":"), "[", 1) %>% unlist(),
+#                   Minute = lapply(strsplit(as.character(Time2), ":"), "[", 2) %>% unlist()) %>%
+#     dplyr::mutate(Time = paste0(Hour, ":", Minute),
+#                   Date = paste0(Month, " ", Day, ", ", Year)) %>%
+#     dplyr::select(Date, Time, TideHeight) %>%
+#     setNames(c("Date", "Time", unitLabel()))
+#   
+#   data
+# })
+# 
+# # dailyTable <- reactive({
+# #   data <- dailyData() 
+# #   
+# #   data %<>% mutate(Year = lubridate::year(DateTime),
+# #                    Month = lubridate::month(DateTime, label = T, abbr = T),
+# #                    Day = lubridate::day(DateTime),
+# #                    Time2 = lapply(strsplit(as.character(DateTime), " "), "[", 2) %>% unlist(),
+# #                    Height = round(Height, 2)) %>%
+# #     dplyr::mutate(Hour = lapply(strsplit(as.character(Time2), ":"), "[", 1) %>% unlist(),
+# #                   Minute = lapply(strsplit(as.character(Time2), ":"), "[", 2) %>% unlist()) %>%
+# #     mutate(Time = paste0(Hour, ":", Minute),
+# #            Date = paste0(Month, " ", Day, ", ", Year)) %>%
+# #     group_by(Date, Height) %>%
+# #     slice(1) %>%
+# #     arrange(DateTime) %>%
+# #     select(Date, Time, Height) %>%
+# #     setNames(c("Date", "Time", unitLabel()))
+# #   
+# #   data
+# # })
+# 
+# ############ Observers ------
+# 
+# # submit after comment
+# observe({
+#   shinyjs::toggleState(id = "submit_feedback", condition = input$comment)
+# })
+# 
+# # get location of site from search or click
+# location <- reactiveValues(loc = NULL)
+# 
+# observeEvent(input$map_marker_click, {
+#   click <- input$map_marker_click
+#   loc <- c(click$lng, click$lat)           
+#   location$loc <- loc})
+# 
+# observeEvent(input$search_site, {
+#   station <- input$search_site
+#   lng <- filter(sites, Station == station)$X
+#   lat <- filter(sites, Station == station)$Y
+#   loc <- c(lng, lat)       
+#   location$loc <- loc})
+# 
+# # zoom to site on click or search
+# observeEvent(c(input$map_marker_click, input$search_site),
+#              {leafletProxy('map') %>%
+#                  setView(lat = location$loc[2], lng = location$loc[1] + 0.12, zoom = click_zoom)})
+# 
+# # render label
+# observeEvent(c(input$map_marker_click, input$search_site),
+#              {output$station_title <- renderText({stationLabel()})})
+# 
+# # plot
+# observeEvent(c(input$map_marker_click, input$search_site),
+#              {output$tide_plot <- renderDygraph({
+#                tidePlot()
+#              })})
+# 
+# # table
+# observeEvent(c(input$map_marker_click, input$search_site),
+#              {output$tide_table <- DT::renderDataTable({
+#                tideTable()
+#              })})
+# # 
+# # observeEvent(c(input$map_marker_click, input$search_site),
+# #              {output$daily_table <- DT::renderDataTable({
+# #                dailyTable()
+# #              })})
+# 
+# # submit feeback to dropbox
+# observeEvent(input$submit_feedback,
+#              {uploadData(feedbackData())
+#                removeModal()})
+# 
+# observeEvent(input$feedback,
+#              {showModal(modalDialog(title = "", 
+#                                     size = "m", easyClose = T,
+#                                     footer = modalButton("Got it"),
+#                                     textInput("name", "Name (optional):", width = "30%"),
+#                                     textInput("email", "Email (optional):", width = "30%"),
+#                                     textInput("comment", labelMandatory("Comment:"), width = "100%"),
+#                                     actionButton("submit_feedback", "Submit")))})
+# 
+# # information
+# observeEvent(input$information,
+#              {showModal(modalDialog("Tide predictions are generated using the rtide R package and are not suitable for navigation. 
+#                                     For more information about rtide, see https://github.com/poissonconsulting/rtide.",
+#                                     size = "m", easyClose = T,
+#                                     footer = modalButton("Got it")))
+#              })
+# 
+# ### csv download
+# output$download <- downloadHandler(
+#   filename = function() {
+#     paste0(prettyLabel(), "_", gsub("-", "", as.character(input$from)), "_", gsub("-", "", as.character(input$to)), ".csv")
+#   },
+#   content <- function(file) {
+#     readr::write_csv(downloadData(), file)
+#   }
+# )
+}

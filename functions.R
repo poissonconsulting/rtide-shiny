@@ -18,3 +18,10 @@ find_peaks <- function (x, m = 3){
   pks <- unlist(pks)
   pks
 }
+
+labelMandatory <- function(label) {
+  tagList(
+    label,
+    span("*", class = "mandatory_star")
+  )
+}
