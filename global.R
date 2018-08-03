@@ -1,17 +1,12 @@
 ## upload button
 library(shiny)
 library(shinyjs)
-library(dplyr)
 library(readr)
-library(sf)
 library(lubridate)
 library(magrittr)
 library(leaflet)
 library(rtide)
-library(poisspatial)
-library(scales)
 library(DT)
-library(shinyWidgets)
 library(dygraphs)
 library(shinyBS)
 
