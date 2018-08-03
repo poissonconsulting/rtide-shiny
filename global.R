@@ -1,10 +1,8 @@
 ## upload button
 library(shiny)
 library(shinyjs)
-library(rdrop2)
 library(dplyr)
 library(readr)
-library(gmailr)
 library(sf)
 library(lubridate)
 library(magrittr)
@@ -15,9 +13,6 @@ library(scales)
 library(DT)
 library(shinyWidgets)
 library(dygraphs)
-
-helpers <- 'helpers/'
-feedback_folder <- "Shiny/rtide/feedback/"
 
 initial_lat <- 43.6157777
 initial_long <- -86.311505
