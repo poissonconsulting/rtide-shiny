@@ -13,6 +13,7 @@ library(scales)
 library(DT)
 library(shinyWidgets)
 library(dygraphs)
+library(shinyBS)
 
 #slackr
 slackr::slackr_setup(config_file = "./.slackr")
@@ -37,12 +38,15 @@ proj <- "U.S. Tidal Predictions"
 
 mapbox_moon <- "https://api.mapbox.com/styles/v1/sebpoisson/cjjfvxsqh1nrd2rnqabh10sx4/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1Ijoic2VicG9pc3NvbiIsImEiOiJjamk1YXBiYm4waHd0M2twNmM3ODRuZjN4In0.WKHsGJ3K7SWyqO4lObCkfA
 "
+disclaimer <- "Tide predictions are generated using the rtide R package and are not suitable for navigation.
+                                      For more information about rtide, see https://github.com/poissonconsulting/rtide."
 
 initial_lat <- 43
 initial_long <- -120
 initial_zoom <- 3
 click_zoom <- 11
-leaf.pos <- "topright"
+leaf.pos <- "topleft"
+sidepanel.width <- 400
 
 sites <- rtide::harmonics$Station %>%
   ps_longlat_to_sfc() %>%
