@@ -5,6 +5,3 @@
 
 .httr-oauth
 .slackr
-
-shiny/helpers/droptoken.rds
-shiny/helpers/poisson-shiny-mail-auth.json
