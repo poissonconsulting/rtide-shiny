@@ -2,10 +2,6 @@ map <- function(input, output, session) {
   ns <- session$ns
   
   ############### --------------- Reactives --------------- ###############
-  observe({
-    print(station$location)
-  })
-  
   ### filter data
   filter_data <- reactive({
     sites[which(sites$Station == station$location), ]
@@ -159,34 +155,29 @@ map <- function(input, output, session) {
   output$uiModal <- renderUI({
     bsModal(ns('modal'), title = station_label(), trigger = 'click2', size = "large",
             div(id = ns("top_row"),
-                
-                div(id = ns('dates'),
-                    fluidRow(
-                      column(4,
-                             dateInput(ns("from"), "From:", format = "M d, yyyy")
-                      ),
-                      column(4,
-                             dateInput(ns("to"), "To:", format = "M d, yyyy", value = Sys.Date() + 1)
-                      ),
-                      column(2,
-                             numericInput(ns("interval"), "Interval (minutes):", 
-                                          value = 10, min = 0, max = 60, step = 5)
-                      ),
-                      column(2,
-                             selectInput(ns("units"), label = "Units:", 
-                                         choices = c("meters", "feet"), selected = "meters")))),
-                tabsetPanel(id = ns("tabs"),
-                  tabPanel(title = "Plot",
-                           br(),
-                           dygraphOutput(ns("plot"), height = "375px")),
-                  tabPanel(title = "Table",
-                           br(),
-                           DT::dataTableOutput(ns('table')))
-                ),
-                br(),
-                downloadButton(outputId = ns("download"), label = "Download data (csv)", class = 'small-dl')))
+                    sidebarLayout(
+                      sidebarPanel(width = 3,
+                                   dateInput(ns("from"), "From:", format = "M d, yyyy"),
+                                   dateInput(ns("to"), "To:", format = "M d, yyyy", 
+                                             value = Sys.Date() + 1),
+                                   numericInput(ns("interval"), "Interval (minutes):", 
+                                                value = 10, min = 0, max = 60, step = 5),
+                                   selectInput(ns("units"), label = "Units:", 
+                                               choices = c("meters", "feet"), selected = "meters"),
+                                   downloadButton(outputId = ns("download"), 
+                                                  label = "Download data (csv)", class = 'small-dl')
+                                   ),
+                      mainPanel(width = 9,
+                                tabsetPanel(id = ns("tabs"),
+                                            tabPanel(title = "Plot",
+                                                     br(),
+                                                     dygraphOutput(ns("plot"), height = "375px")),
+                                            tabPanel(title = "Table",
+                                                     br(),
+                                                     DT::dataTableOutput(ns('table')))))
+                      )))
   })
-  
+                                   
   ############### --------------- Download handlers --------------- ###############
   output$download <- downloadHandler(
     filename = function() {
