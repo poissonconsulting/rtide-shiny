@@ -1,23 +1,28 @@
 mapUI <- function(id, label = 'map') {
   ns <- NS(id)
   
-  absolutePanel(
-    top = "auto", left = "auto", right = 20, bottom = 20,
-    width = "auto", height = "auto",
-    actionButton(ns("map_zoom_in"), "+"),
-    actionButton(ns("map_zoom_out"), "-")
-  )
-  
   fluidRow(
-    splitLayout(cellWidths = c("1%", "99%"),
-      div(),
-      selectizeInput(inputId = ns("search"), label = NULL, 
-                   choices = c("", sites$Station),
-                   selected = "",
-                   options = list(
-                     placeholder = 'Search stations or click marker to begin...'),
-                   width = 300)),
-    absolutePanel(leafletOutput(ns('leaflet')), top = 0, left = 0, 
+    absolutePanel(class = 'zoomPanel',
+      top = 60, left = "auto", right = 10, bottom = 'auto',
+      width = "auto", height = "auto",
+      verticalLayout(actionButton(ns("map_zoom_in"), "+", class = 'small-button', width = 35),
+      actionButton(ns("map_zoom_out"), "-", class = "small-button", width = 35))
+    ),
+    
+    fluidRow(
+      absolutePanel(
+                    top = 60, left = 10, right = 'auto', bottom = 'auto',
+                    width = "auto", height = "auto",
+                    selectizeInput(inputId = ns("search"), label = NULL, 
+                                    choices = c("", sites$Station),
+                                    selected = "",
+                                    options = list(
+                                      placeholder = 'Search stations or click marker to begin...'),
+                                    width = 300))
+      ),
+   
+      
+    absolutePanel(leafletOutput(ns('leaflet')), top = 0, left = 0,
                   right = 0, bottom = 0, height = 'auto'),
     # absolutePanel(id = ns("searchPanel"), class = "panel panel-default", 
     #               draggable = TRUE, top = 60, right = 'auto', left = 60, bottom = 'auto',

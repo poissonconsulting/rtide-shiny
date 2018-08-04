@@ -85,7 +85,17 @@ div.outer {
   font-size:85%;
 }
 
-.selectize-input { font-size: 12px; }
+.selectize-input, .selectize-dropdown-content { font-size: 12px; }
+
+.zoomPanel {
+  z-index: 1002;
+}
+
+.small-button {
+  color: #00649A;
+  font-size: 100%;
+  padding: 4px 4px 4px 4px;
+}
 
 /****************************************** leaflets **********************************/
 .leaflet {height: calc(100vh) !important;}
@@ -121,8 +131,8 @@ div.outer {
                
 .leaflet-top {
   z-index: 999 !important;
-  top: 50px;
-  left: 7px;
+  top: 115px;
+  left: 3px;
 }
 
 .leaflet-control {
@@ -152,7 +162,7 @@ div.outer {
   border-color: transparent;
 }
 .navbar-default .navbar-brand {
-  color: #E0E0E0;
+  color: #FFBA00;
 }
 .navbar-default .navbar-brand:hover,
 .navbar-default .navbar-brand:focus {
@@ -167,13 +177,13 @@ div.outer {
 }
 .navbar-default .navbar-nav > li > a:hover,
 .navbar-default .navbar-nav > li > a:focus {
-  color: #37CBA2;
+  color: #07A8FF;
   background-color: transparent;
 }
 .navbar-default .navbar-nav > .active > a,
 .navbar-default .navbar-nav > .active > a:hover,
 .navbar-default .navbar-nav > .active > a:focus {
-  color: #37CBA2;
+  color: #07A8FF;
   background-color: transparent;
 }
 .navbar-default .navbar-nav > .disabled > a,
@@ -187,7 +197,7 @@ div.outer {
 }
 .navbar-default .navbar-toggle:hover,
 .navbar-default .navbar-toggle:focus {
-  background-color: #37CBA2;
+  background-color: #07A8FF;
 }
 .navbar-default .navbar-toggle .icon-bar {
   background-color: #E0E0E0;
@@ -200,7 +210,7 @@ div.outer {
 .navbar-default .navbar-nav > .open > a:hover,
 .navbar-default .navbar-nav > .open > a:focus {
   background-color: #101010;
-  color:#37CBA2;
+  color:#07A8FF;
 }
 @media (max-width: 767px) {
   .navbar-default .navbar-nav .open .dropdown-menu > li > a {
