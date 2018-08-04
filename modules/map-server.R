@@ -82,14 +82,8 @@ map <- function(input, output, session) {
   
   tide_table <- reactive({
     data <- tide_data() 
-    data$Year <- lubridate::year(data$DateTime)
-    data$Month <- lubridate::month(data$DateTime, label = TRUE, abbr = TRUE)
-    data$day <- lubridate::day(data$DateTime)
-    data$Time2 <- lapply(strsplit(as.character(data$DateTime), " "), "[", 2) %>% unlist()
-    data$Hour <- lapply(strsplit(as.character(data$Time2), ":"), "[", 1) %>% unlist()
-    data$Minute <- lapply(strsplit(as.character(data$DateTime), " "), "[", 2) %>% unlist()
-    data$Time <- paste0(data$Hour, ":", data$Minute)
-    data$Date <- paste0(data$Month, " ", data$Day, ", ", data$Year)
+    data$Time <- strftime(data$DateTime, format = "%H:%M %p")
+    data$Date <- strftime(data$DateTime, format = "%B %d, %Y")
     data[,c("Date", "Time", "TideHeight")] %>% 
       setNames(c("Date", "Time", unit_label()))
   })
