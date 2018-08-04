@@ -49,16 +49,13 @@ div.outer {
 }
 
 .modal-footer{ display:none}
-
-.modal{
+.modal-header{ border: none;
 }
 
 #map-searchPanel {
   padding: -20px -20px -20px -20px;
   margin-bottom: -20px;
-
 }
-
 
 #map-search {
   padding: 0 0 0 0;
@@ -75,12 +72,13 @@ div.outer {
 
 #map-modalTitle {
   font-weight: 600;
+  font-size: 14px;
 }
 
  .wellpanel {
   overflow-x:scroll; 
     overflow-y:scroll; 
-  max-height: 500px; 
+  max-height: 400px; 
   background-color: white;
   font-size:85%;
 }
@@ -95,6 +93,25 @@ div.outer {
   color: #00649A;
   font-size: 100%;
   padding: 4px 4px 4px 4px;
+}
+
+.control {
+  padding:5px;
+}
+
+.label{
+  font-size: 13px;
+  color: black;
+  font-weight: 600;
+  padding: 0;
+  text-align: left;
+}
+
+#map-sidebar {
+  background: white;
+  opacity: 1;
+  border: 0px black;
+  box-shadow: none;
 }
 
 /****************************************** leaflets **********************************/
