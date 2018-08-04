@@ -6,14 +6,14 @@ mapUI <- function(id, label = 'map') {
                   right = 0, bottom = 0, height = 'auto'),
     absolutePanel(id = ns("searchPanel"), class = "panel panel-default", 
                   draggable = TRUE, top = 60, right = 'auto', left = 60, bottom = 'auto',
-                  width = 250, height = 36,
+                  width = 250, height = 'auto',
                   selectizeInput(inputId = ns("search"), label = NULL, 
                                  choices = c("", sites$Station),
                                  selected = "",
                                  options = list(
                                    placeholder = 'Search stations...')
-                                 ),
-                  actionLink(ns('zoom'), "Zoom to location")),
+                                 )),
+                  # actionLink(ns('zoom'), "Zoom to station")),
     uiOutput(ns('uiModal')))
     
     

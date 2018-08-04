@@ -29,8 +29,6 @@ map <- function(input, output, session) {
     data <- filter_data()
     station <- station_label()
     tz <- data$TZ
-    print(tz)
-    print(data)
     
     data <- rtide::tide_height(
       station, from = input$from, to = input$to,
@@ -42,7 +40,8 @@ map <- function(input, output, session) {
     if(input$units == "meters"){
       return(data)
     } 
-    data %>% mutate(TideHeight = round(TideHeight * 3.3333, 2))
+    data$TideHeight <- round(data$TideHeight * 3.3333, 2)
+    data
   })
   
   download_data <- reactive({
@@ -61,7 +60,6 @@ map <- function(input, output, session) {
     
     pad <- (max(data$TideHeight) - min(data$TideHeight))/7
     padrange <- c(min(data$TideHeight) - pad, max(data$TideHeight) + pad)
-    
     
     data  <- data[,c('TideHeight', 'DateTime')] %>%
       setNames(c(unit_label(), "Date-Time"))
@@ -97,12 +95,14 @@ map <- function(input, output, session) {
   
   ############### --------------- Observers --------------- ###############
   observeEvent(c(input$leaflet_marker_click, input$search), {
+    req(station$location)
     toggleModal(session, "modal", "open")
   })
   
   # zoom to site on click or search
   observeEvent(input$zoom,
-               {leafletProxy('leaflet') %>%
+               {if(nrow(filter_data()) == 0L){return()}
+                 leafletProxy('leaflet') %>%
                    setView(lat = filter_data()$Y, lng = filter_data()$X, zoom = click_zoom)})
   
   ############### --------------- Leaflet --------------- ###############
@@ -148,12 +148,14 @@ map <- function(input, output, session) {
   })
   
   # table
-  output$table <- DT::renderDataTable({
-    tide_table()
+  output$table <- renderDataTable({
+    datatable(tide_table(), options = list(
+      pageLength = 500
+    ))
   })
   
   output$uiModal <- renderUI({
-    bsModal(ns('modal'), title = station_label(), trigger = 'click2', size = "large",
+    bsModal(ns('modal'), title = div(id = ns('modalTitle'), station_label()), trigger = 'click2', size = "large",
             div(id = ns("top_row"),
                     sidebarLayout(
                       sidebarPanel(width = 3,
@@ -174,7 +176,10 @@ map <- function(input, output, session) {
                                                      dygraphOutput(ns("plot"), height = "375px")),
                                             tabPanel(title = "Table",
                                                      br(),
-                                                     DT::dataTableOutput(ns('table')))))
+                                                     wellPanel(class = 'wellpanel',
+                                                       DT::dataTableOutput(ns('table'))
+                                                     )
+                                                     )))
                       )))
   })
                                    

@@ -46,7 +46,6 @@ div.outer {
 
 .small-dl{
   padding:4px; font-size:100%;
-  background-color: #B4D8E7;
 }
 
 .modal-footer{ display:none}
@@ -55,11 +54,15 @@ div.outer {
 }
 
 #map-searchPanel {
-  background-color: rgba(0,0,255,0);
+  padding: -20px -20px -20px -20px;
+  margin-bottom: -20px;
+
 }
 
+
 #map-search {
-  background-color: rgba(0,0,255,1);
+  padding: 0 0 0 0;
+  margin-bottom: -20em;
 }
 
 #map-tabs {
@@ -67,8 +70,22 @@ div.outer {
 }
 
 .modal-lg {
-  width: 85%;
+  width: 90%;
 }
+
+#map-modalTitle {
+  font-weight: 600;
+}
+
+ .wellpanel {
+  overflow-x:scroll; 
+    overflow-y:scroll; 
+  max-height: 500px; 
+  background-color: white;
+  font-size:85%;
+}
+
+
 
 /****************************************** leaflets **********************************/
 .leaflet {height: calc(100vh) !important;}

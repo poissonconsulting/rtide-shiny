@@ -40,7 +40,7 @@ initial_lat <- 43
 initial_long <- -120
 initial_zoom <- 3
 click_zoom <- 11
-leaf.pos <- "topleft"
+leaf.pos <- "topright"
 sidepanel.width <- 400
 
 sites <- readRDS('input/sites.rds')
