@@ -1,6 +1,116 @@
 map <- function(input, output, session) {
   ns <- session$ns
   
+  ############### --------------- Reactives --------------- ###############
+  observe({
+    print(station$location)
+  })
+  
+  ### filter data
+  filter_data <- reactive({
+    sites[which(sites$Station == station$location), ]
+  })
+  
+  ### reactive labels
+  station_label <- reactive({
+    filter_data()$Station
+  })
+  
+  pretty_label <- reactive({
+    strsplit(station_label(), ",")[[1]][1] %>%
+      sub(" ", "", .)
+  })
+  
+  unit_label <- reactive({
+    if(input$units == "meters") {
+      return("Tide Height (m)")
+    }
+    "Tide Height (ft)"
+  })
+  
+  tide_data <- reactive({
+    req(station$location)
+    data <- filter_data()
+    station <- station_label()
+    tz <- data$TZ
+    print(tz)
+    print(data)
+    
+    data <- rtide::tide_height(
+      station, from = input$from, to = input$to,
+      minutes = input$interval, tz = tz)
+    
+    data$TideHeight %<>% round(2)
+    data$TimeZone <- tz
+    
+    if(input$units == "meters"){
+      return(data)
+    } 
+    data %>% mutate(TideHeight = round(TideHeight * 3.3333, 2))
+  })
+  
+  download_data <- reactive({
+    data <- tide_data()
+    data$DateTime <- as.character(data$DateTime) 
+    if(input$units == "meters"){
+      return(data %>% setNames(c("Station", "DateTime", "TideHeight_m", "TimeZone")))
+      } 
+    data %>% setNames(c("Station", "DateTime", "TideHeight_ft", "TimeZone"))
+  })
+  
+  tide_plot <- reactive({
+    data <- tide_data()
+    time <- Sys.time()
+    time %<>% lubridate::with_tz(tz = data$TimeZone[1])
+    
+    pad <- (max(data$TideHeight) - min(data$TideHeight))/7
+    padrange <- c(min(data$TideHeight) - pad, max(data$TideHeight) + pad)
+    
+    
+    data  <- data[,c('TideHeight', 'DateTime')] %>%
+      setNames(c(unit_label(), "Date-Time"))
+    xtsdata <- xts::xts(data, order.by = data$`Date-Time`)
+    
+    dygraph(xtsdata, height = "10px") %>%
+      dyOptions(strokeWidth = 1.5, drawGrid = F, includeZero = F,
+                useDataTimezone = T, drawGapEdgePoints = T, rightGap = 15) %>%
+      dyRangeSelector() %>%
+      dyAxis("y", valueRange = padrange,
+             label = unit_label()) %>%
+      dyEvent(x = time, label = "Current time", labelLoc = "bottom")
+  })
+  
+  tide_table <- reactive({
+    data <- tide_data() 
+    data$Year <- lubridate::year(data$DateTime)
+    data$Month <- lubridate::month(data$DateTime, label = TRUE, abbr = TRUE)
+    data$day <- lubridate::day(data$DateTime)
+    data$Time2 <- lapply(strsplit(as.character(data$DateTime), " "), "[", 2) %>% unlist()
+    data$Hour <- lapply(strsplit(as.character(data$Time2), ":"), "[", 1) %>% unlist()
+    data$Minute <- lapply(strsplit(as.character(data$DateTime), " "), "[", 2) %>% unlist()
+    data$Time <- paste0(data$Hour, ":", data$Minute)
+    data$Date <- paste0(data$Month, " ", data$Day, ", ", data$Year)
+    data[,c("Date", "Time", "TideHeight")] %>% 
+      setNames(c("Date", "Time", unit_label()))
+  })
+  
+  ############### --------------- Reactive Values --------------- ###############
+  station <- reactiveValues(location = NULL)
+  
+  observeEvent(input$leaflet_marker_click, {
+    station$location <- input$leaflet_marker_click$id
+  })
+  
+  observeEvent(input$search, {
+    station$location <- input$search
+  })
+  
+  ############### --------------- Observers --------------- ###############
+  observeEvent(c(input$leaflet_marker_click, input$search), {
+    toggleModal(session, "modal", "open")
+  })
+  
+  ############### --------------- Leaflet --------------- ###############
   output$leaflet <- leaflet::renderLeaflet({
     leaflet() %>%
       
@@ -20,6 +130,7 @@ map <- function(input, output, session) {
         data = sites,
         lng = sites$X, lat = sites$Y,
         label = sites$Station,
+        layerId = sites$Station,
         icon = makeIcon(
           iconUrl = "input/marker1.png",
           iconWidth = 30, iconHeight = 30
@@ -33,138 +144,18 @@ map <- function(input, output, session) {
     #                     autoToggleDisplay = T, aimingRectOptions = list(weight = 1),
     #                     tiles =  mapbox_moon)  %>%
   })
-
   
-  observeEvent(c(input$leaflet_marker_click, input$search), {
-    toggleModal(session, "modal", "open")
-  })
+  ############### --------------- Outputs --------------- ###############
   
-  # ############ Reactives ------
-  # filter data
-  filter_data <- reactive({
-    loc <- location$loc
-    sites[which(sites$X == round(loc[1], 4) & sites$Y == round(loc[2], 4)),]
-  })
   
-  ### reactive labels
-  station_label <- reactive({
-    loc <- location$loc
-    sites[which(sites$X == loc[1] & sites$Y == loc[2]),]$Station
-  })
   # 
-  pretty_label <- reactive({
-    station <- filter_data()$Station
-    strsplit(station, ",")[[1]][1] %>%
-      sub(" ", "", .)
-  })
-
-  unit_label <- reactive({
-    if(input$units == "meters") {
-      return("Tide Height (m)")
-    }
-    "Tide Height (ft)"
-  })
-
-  ### Tide data
-  tide_data <- reactive({
-    req(location$loc)
-    filtered <- filter_data()
-    label <- filtered$Station
-    tz <- filtered$TZ
-
-    data <- rtide::tide_height(
-      label, from = input$from, to = input$to,
-      minutes = input$interval, tz = tz)
-
-    data$TideHeight %<>% round(2)
-    data$TimeZone <- tz
-
-    if(input$units == "meters"){
-      return(data)
-    } 
-    data %>% mutate(TideHeight = round(TideHeight * 3.3333, 2))
-  })
-
-  download_data <- reactive({
-    data <- tide_data()
-    data$DateTime <- as.character(data$DateTime) 
-    if(input$units == "meters"){
-      return(data %>% setNames(c("Station", "DateTime", "TideHeight_m", "TimeZone")))} 
-    data %>% setNames(c("Station", "DateTime", "TideHeight_ft", "TimeZone"))
-  })
-
-  feedback_data <- reactive({
-    data.frame(Name = input$name,
-                       Email = input$email,
-                       Comment = input$comment)
-  })
-
-  # metrics
-  # tide_plot <- reactive({
-  #  dat <- tide_data()
-  # 
-  #  gp <- mjs_plot(data = dat, x = DateTime, y = TideHeight, height = 10, left = 10, top = 0) %>%
-  #    mjs_line() %>%
-  #    mjs_labs(y = "Tide Height (m)")
-  #  gp
-  # })
-
-  ############ outputs -------
-  # dygraph
-  tide_plot <- reactive({
-    dat <- tide_data()
-    time <- Sys.time()
-    time %<>% lubridate::with_tz(tz = dat$TimeZone[1])
-
-    pad <- (max(dat$TideHeight) - min(dat$TideHeight))/7
-    padrange <- c(min(dat$TideHeight) - pad, max(dat$TideHeight) + pad)
-
-
-    dat  <- dat[,c('TideHeight', 'DateTime')] %>%
-      setNames(c(unit_label(), "Date-Time"))
-    xtsdat <- xts::xts(dat, order.by = dat$`Date-Time`)
-
-    dygraph(xtsdat, height = "10px") %>%
-      dyOptions(strokeWidth = 1.5, drawGrid = F, includeZero = F,
-                useDataTimezone = T, drawGapEdgePoints = T, rightGap = 15) %>%
-      dyRangeSelector() %>%
-      dyAxis("y", valueRange = padrange,
-             label = unit_label()) %>%
-      dyEvent(x = time, label = "Current time", labelLoc = "bottom")
-  })
-
-  tide_table <- reactive({
-    data <- tide_data() 
-    data$Year <- lubridate::year(data$DateTime)
-    data$Month <- lubridate::month(data$DateTime, label = TRUE, abbr = TRUE)
-    data$day <- lubridate::day(data$DateTime)
-    data$Time2 <- lapply(strsplit(as.character(data$DateTime), " "), "[", 2) %>% unlist()
-    data$Hour <- lapply(strsplit(as.character(data$Time2), ":"), "[", 1) %>% unlist()
-    data$Minute <- lapply(strsplit(as.character(data$DateTime), " "), "[", 2) %>% unlist()
-    data$Time <- paste0(data$Hour, ":", data$Minute)
-    data$Date <- paste0(data$Month, " ", data$Day, ", ", data$Year)
-    data[,c("Date", "Time", "TideHeight")] %>% 
-      setNames(c("Date", "Time", unit_label()))
-  })
-
-  ############ Observers ------
-
-  # get location of site from search or click
-  location <- reactiveValues(loc = NULL)
-
-  observeEvent(input$leaflet_marker_click, {
-    click <- input$leaflet_marker_click
-    loc <- c(click$lng, click$lat)
-    location$loc <- loc
-    })
-
-  observeEvent(input$search, {
-    station <- input$search
-    lng <- filter(sites, Station == station)$X
-    lat <- filter(sites, Station == station)$Y
-    loc <- c(lng, lat)
-    location$loc <- loc
-    })
+  # observeEvent(input$search, {
+  #   station <- input$search
+  #   lng <- filter(sites, Station == station)$X
+  #   lat <- filter(sites, Station == station)$Y
+  #   loc <- c(lng, lat)
+  #   location$loc <- loc
+  #   })
 
   # # zoom to site on click or search
   # observeEvent(c(input$leaflet_marker_click, input$search),
@@ -172,8 +163,8 @@ map <- function(input, output, session) {
   #                  setView(lat = location$loc[2], lng = location$loc[1] + 0.12, zoom = click_zoom)})
 
   # render label
-  observeEvent(c(input$leaflet_marker_click, input$search),
-               {output$station <- renderText({station_label()})})
+  # observeEvent(c(input$leaflet_marker_click, input$search),
+  #              {output$station <- renderText({station_label()})})
 
   # plot
   observeEvent(c(input$leaflet_marker_click, input$search),
