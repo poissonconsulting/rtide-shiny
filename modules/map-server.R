@@ -1,4 +1,4 @@
-map <- function(input, output, session, search) {
+map <- function(input, output, session) {
   ns <- session$ns
   
   ############### --------------- Reactives --------------- ###############
@@ -85,8 +85,8 @@ map <- function(input, output, session, search) {
   ############### --------------- Reactive Values --------------- ###############
   station <- reactiveValues(location = NULL)
   
-  observeEvent(search$station, {
-    station$location <- search$station
+  observeEvent(input$search, {
+    station$location <- input$search
   })
 
   observeEvent(input$leaflet_marker_click, {
@@ -94,7 +94,7 @@ map <- function(input, output, session, search) {
   })
 
   ############### --------------- Observers --------------- ###############
-  observeEvent(c(input$leaflet_marker_click, search$station), {
+  observeEvent(c(input$leaflet_marker_click, input$search), {
     req(station$location)
     toggleModal(session, "modal", "open")
   })
@@ -106,12 +106,27 @@ map <- function(input, output, session, search) {
                    setView(lat = filter_data()$Y, lng = filter_data()$X, zoom = click_zoom)})
   
   ############### --------------- Leaflet --------------- ###############
+  
+  observeEvent(input$map_zoom_out ,{
+    leafletProxy("map") %>% 
+      setView(lat  = (input$map_bounds$north + input$map_bounds$south) / 2,
+              lng  = (input$map_bounds$east + input$map_bounds$west) / 2,
+              zoom = input$map_zoom - 1)
+  })
+  # Zoom control - zoom in
+  observeEvent(input$map_zoom_in ,{
+    leafletProxy("map") %>% 
+      setView(lat  = (input$map_bounds$north + input$map_bounds$south) / 2,
+              lng  = (input$map_bounds$east + input$map_bounds$west) / 2,
+              zoom = input$map_zoom + 1)
+  })
+  
   output$leaflet <- leaflet::renderLeaflet({
-    leaflet() %>%
+    leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
       
       setView(lat = initial_lat, lng = initial_long, zoom = initial_zoom) %>%
       
-      addEasyButton(easyButton(icon = "ion-arrow-shrink",
+      addEasyButton(easyButton(icon = "ion-arrow-shrink", position = leaf.pos,
                                title = "Reset View", onClick = JS(paste0("function(btn, map){ map.setView(new L.LatLng(", initial_lat, ", ", initial_long, "), ", initial_zoom, ", { animation: true });}")))) %>%
       
       addProviderTiles("Esri.WorldImagery", options = providerTileOptions(opacity = 1), group = "Satelite") %>%
@@ -128,8 +143,8 @@ map <- function(input, output, session, search) {
         label = sites$Station,
         layerId = sites$Station,
         icon = makeIcon(
-          iconUrl = "input/marker1.png",
-          iconWidth = 30, iconHeight = 30
+          iconUrl = "input/marker.png",
+          iconWidth = 3.8*3.5, iconHeight = 5.1*3.5
         ),
         group = 'sites',
         clusterOptions = markerClusterOptions(showCoverageOnHover = F)
