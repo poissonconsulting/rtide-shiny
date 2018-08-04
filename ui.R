@@ -1,6 +1,7 @@
 ui = tagList(useShinyjs(),  
              tags$head(includeCSS("style.css")),
-             navbarPage(title =  proj, selected = 'Map',
+             navbarPage(title =  searchUI('search'),
+                        selected = 'Map',
                         tabPanel(title = 'Map',
                                  br(),
                                  mapUI('map')),

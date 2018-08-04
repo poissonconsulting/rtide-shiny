@@ -1,4 +1,4 @@
-map <- function(input, output, session) {
+map <- function(input, output, session, search) {
   ns <- session$ns
   
   ############### --------------- Reactives --------------- ###############
@@ -85,16 +85,16 @@ map <- function(input, output, session) {
   ############### --------------- Reactive Values --------------- ###############
   station <- reactiveValues(location = NULL)
   
+  observeEvent(search$station, {
+    station$location <- search$station
+  })
+
   observeEvent(input$leaflet_marker_click, {
     station$location <- input$leaflet_marker_click$id
   })
-  
-  observeEvent(input$search, {
-    station$location <- input$search
-  })
-  
+
   ############### --------------- Observers --------------- ###############
-  observeEvent(c(input$leaflet_marker_click, input$search), {
+  observeEvent(c(input$leaflet_marker_click, search$station), {
     req(station$location)
     toggleModal(session, "modal", "open")
   })

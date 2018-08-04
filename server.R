@@ -2,7 +2,9 @@ function(input, output, session) {
   
   callModule(about, 'about')
   
-  callModule(map, "map")
+  callSearch <- callModule(search, 'search')
+  
+  callModule(map, "map", callSearch)
   
 }
 
