@@ -62,6 +62,14 @@ div.outer {
   background-color: rgba(0,0,255,1);
 }
 
+#map-tabs {
+  font-weight: 100;
+}
+
+.modal-lg {
+  width: 85%;
+}
+
 /****************************************** leaflets **********************************/
 .leaflet {height: calc(100vh) !important;}
 

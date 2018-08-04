@@ -54,7 +54,7 @@ map <- function(input, output, session) {
     data$DateTime <- as.character(data$DateTime) 
     if(input$units == "meters"){
       return(data %>% setNames(c("Station", "DateTime", "TideHeight_m", "TimeZone")))
-      } 
+    } 
     data %>% setNames(c("Station", "DateTime", "TideHeight_ft", "TimeZone"))
   })
   
@@ -104,6 +104,11 @@ map <- function(input, output, session) {
     toggleModal(session, "modal", "open")
   })
   
+  # zoom to site on click or search
+  observeEvent(input$zoom,
+               {leafletProxy('leaflet') %>%
+                   setView(lat = filter_data()$Y, lng = filter_data()$X, zoom = click_zoom)})
+  
   ############### --------------- Leaflet --------------- ###############
   output$leaflet <- leaflet::renderLeaflet({
     leaflet() %>%
@@ -122,7 +127,8 @@ map <- function(input, output, session) {
         position = leaf.pos) %>%
       leaflet::addMarkers(
         data = sites,
-        lng = sites$X, lat = sites$Y,
+        lng = sites$X, 
+        lat = sites$Y,
         label = sites$Station,
         layerId = sites$Station,
         icon = makeIcon(
@@ -140,47 +146,15 @@ map <- function(input, output, session) {
   })
   
   ############### --------------- Outputs --------------- ###############
-  
-  
-  # 
-  # observeEvent(input$search, {
-  #   station <- input$search
-  #   lng <- filter(sites, Station == station)$X
-  #   lat <- filter(sites, Station == station)$Y
-  #   loc <- c(lng, lat)
-  #   location$loc <- loc
-  #   })
-
-  # # zoom to site on click or search
-  # observeEvent(c(input$leaflet_marker_click, input$search),
-  #              {leafletProxy('leaflet') %>%
-  #                  setView(lat = location$loc[2], lng = location$loc[1] + 0.12, zoom = click_zoom)})
-
-  # render label
-  # observeEvent(c(input$leaflet_marker_click, input$search),
-  #              {output$station <- renderText({station_label()})})
-
   # plot
-  observeEvent(c(input$leaflet_marker_click, input$search),
-               {output$plot <- renderDygraph({
-                 tide_plot()
-               })})
-
+  output$plot <- renderDygraph({
+    tide_plot()
+  })
+  
   # table
-  observeEvent(c(input$leaflet_marker_click, input$search),
-               {output$table <- DT::renderDataTable({
-                 tide_table()
-               })})
-
-  ### csv download
-  output$download <- downloadHandler(
-    filename = function() {
-      paste0(pretty_label(), "_", gsub("-", "", as.character(input$from)), "_", gsub("-", "", as.character(input$to)), ".csv")
-    },
-    content <- function(file) {
-      readr::write_csv(download_data(), file)
-    }
-  )
+  output$table <- DT::renderDataTable({
+    tide_table()
+  })
   
   output$uiModal <- renderUI({
     bsModal(ns('modal'), title = station_label(), trigger = 'click2', size = "large",
@@ -201,7 +175,7 @@ map <- function(input, output, session) {
                       column(2,
                              selectInput(ns("units"), label = "Units:", 
                                          choices = c("meters", "feet"), selected = "meters")))),
-                tabsetPanel(
+                tabsetPanel(id = ns("tabs"),
                   tabPanel(title = "Plot",
                            br(),
                            dygraphOutput(ns("plot"), height = "375px")),
@@ -212,5 +186,15 @@ map <- function(input, output, session) {
                 br(),
                 downloadButton(outputId = ns("download"), label = "Download data (csv)", class = 'small-dl')))
   })
+  
+  ############### --------------- Download handlers --------------- ###############
+  output$download <- downloadHandler(
+    filename = function() {
+      paste0(pretty_label(), "_", gsub("-", "", as.character(input$from)), "_", gsub("-", "", as.character(input$to)), ".csv")
+    },
+    content <- function(file) {
+      readr::write_csv(download_data(), file)
+    }
+  )
   
 }

@@ -45,7 +45,6 @@ sidepanel.width <- 400
 
 sites <- readRDS('input/sites.rds')
 
-
 appCSS <- ".mandatory_star { color: red; }"
 
 

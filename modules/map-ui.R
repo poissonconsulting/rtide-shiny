@@ -12,7 +12,8 @@ mapUI <- function(id, label = 'map') {
                                  selected = "",
                                  options = list(
                                    placeholder = 'Search stations...')
-                                 )),
+                                 ),
+                  actionLink(ns('zoom'), "Zoom to location")),
     uiOutput(ns('uiModal')))
     
     
