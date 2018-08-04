@@ -7,3 +7,6 @@
 .slackr
 
 input/
+
+.dcf
+.DS_Store
