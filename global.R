@@ -43,11 +43,7 @@ click_zoom <- 11
 leaf.pos <- "topleft"
 sidepanel.width <- 400
 
-sites <- rtide::harmonics$Station %>%
-  ps_longlat_to_sfc() %>%
-  ps_activate_sfc() %>%
-  select(Station, TZ) %>%
-  ps_sfc_to_coords()
+sites <- readRDS('input/sites.rds')
 
 
 appCSS <- ".mandatory_star { color: red; }"
