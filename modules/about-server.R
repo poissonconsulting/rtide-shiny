@@ -13,11 +13,7 @@ about <- function(input, output, session) {
   
   ### --- feedback
   create_feedback <- reactive({
-    email <- if(!is.null(session$user)){
-      session$user
-    } else {
-      'test'
-    }
+    email <- input$email
     data.frame(Project = proj,
                Email = email,
                Comment = input$comment)
@@ -31,7 +27,8 @@ about <- function(input, output, session) {
     progress <- shiny::Progress$new()
     on.exit(progress$close())
     progress$set(message = "Sending message...", value = 0.5)  
-      slackr::slackr(create_feedback())
+    feedback <- create_feedback()
+      slackr::slackr(feedback)
     showModal(modalDialog(
       footer = modalButton("OK"),
       title = "",

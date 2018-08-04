@@ -25,3 +25,7 @@ labelMandatory <- function(label) {
     span("*", class = "mandatory_star")
   )
 }
+
+inline = function (x) {
+  tags$div(style = "display:inline-block;", x)
+}

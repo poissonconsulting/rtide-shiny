@@ -4,42 +4,48 @@ aboutUI <- function(id, label = 'About') {
   fluidRow(
     column(1,
            HTML("")),
-    column(11,
+    column(10,
            h4(paste("Welcome!")),
            br(),
            p("This app was not designed for use on a mobile."),
            br(),
-           h5(disclaimer),
-           h5(proj.description), hr(),
-           actionLink(ns("info1"), "About the package"),
-           hidden(div(id = ns("div1"),  h6("info here"))), 
-           br(),
-           actionLink(ns('info2'), "Citation"),
+           h5(disclaimer, a("rtide package GitHub page.", href = "https://github.com/poissonconsulting/rtide")),
+               
+           actionLink(ns('info2'), "Citation info"),
            hidden(div(id = ns("div2"),
-                      h6("info again"))),
+                      h6(HTML("Data downloaded from this app are generated from the 'rtide' R package.<br><br>
+                          To cite package 'rtide' in publications use:<br><br>
+
+                         Joe Thorley, Luke Miller and Abram Fleishman (2018). rtide: Tide
+                         Heights. R package version 0.0.4.9010.
+                         https://github.com/poissonconsulting/rtide <br><br>
+                         
+                         A BibTeX entry for LaTeX users is: <br><br>
+                         
+                         @Manual{,
+                         title = {rtide: Tide Heights},
+                         author = {Joe Thorley and Luke Miller and Abram Fleishman},
+                         year = {2018},
+                         note = {R package version 0.0.4.9010},
+                         url = {https://github.com/poissonconsulting/rtide},
+                         }")))),
            br(),
-           actionLink(ns('contactUs'), label = 'Contact us:'),
+           actionLink(ns('contactUs'), label = 'Contact us'),
            shinyjs::hidden(div(id = ns('feedbackForm'),
                                br(),
-                               wellPanel(div(textAreaInput(ns("comment"), label = NULL, width = "100%", height = '100px'),
+                               wellPanel(div(
+                                 textInput(ns('email'), "Email (optional)"),
+                                 textAreaInput(ns("comment"), label = NULL, width = "100%", height = '100px'),
                                              class = 'error-message'),
                                          actionButton(ns("submitFeedback"), "Submit")))),
            hr(),
-           h6('Developed by Poisson Consulting.')),
-    tags$footer(actionLink(inputId = 'poisson', 
-                           label = img(src = 'poisson-logo.png',
-                                       height = 177/5,
-                                       width = 739/5,
-                                       onclick = "window.open('http://www.poissonconsulting.ca', '_blank')")),
-                align = "center", 
-                style = "
-                position: relative;
-                bottom:1;
-                width:100%;
-                height:50px; /* Height of the footer */
-                color: #2f4f4f;
-                padding: 10px;
-                background-color: white;
-                z-index: -1000;
-                font-size: 12px"))
+           h6('rtide R package and app were developed by Poisson Consulting.'),
+           actionLink(inputId = 'poisson', 
+                      label = img(src = 'poisson-logo.png',
+                                  height = 177/5,
+                                  width = 739/5,
+                                  onclick = "window.open('http://www.poissonconsulting.ca', '_blank')"))
+           ),
+    column(1,
+           HTML("")))
 }

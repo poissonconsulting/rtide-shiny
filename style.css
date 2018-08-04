@@ -46,9 +46,9 @@ div.outer {
 
 .small-dl{
   padding:4px; font-size:100%;
+  font-weight: 600;
 }
 
-.modal-footer{ display:none}
 .modal-header{ border: none;
 }
 
