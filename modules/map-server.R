@@ -106,14 +106,13 @@ map <- function(input, output, session) {
                    setView(lat = filter_data()$Y, lng = filter_data()$X, zoom = click_zoom)})
   
   ############### --------------- Leaflet --------------- ###############
-  
+  # Zoom control 
   observeEvent(input$map_zoom_out ,{
     leafletProxy("leaflet") %>% 
       setView(lat  = (input$leaflet_bounds$north + input$leaflet_bounds$south) / 2,
               lng  = (input$leaflet_bounds$east + input$leaflet_bounds$west) / 2,
               zoom = input$leaflet_zoom - 1)
   })
-  # Zoom control - zoom in
   observeEvent(input$map_zoom_in ,{
     leafletProxy("leaflet") %>% 
       setView(lat  = (input$leaflet_bounds$north + input$leaflet_bounds$south) / 2,
@@ -121,6 +120,7 @@ map <- function(input, output, session) {
               zoom = input$leaflet_zoom + 1)
   })
   
+  # map
   output$leaflet <- leaflet::renderLeaflet({
     leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
       
