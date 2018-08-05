@@ -63,7 +63,8 @@ map <- function(input, output, session) {
     
     data  <- data[,c('TideHeight', 'DateTime')] %>%
       setNames(c(unit_label(), "Date-Time"))
-    xtsdata <- xts::xts(data, order.by = data$`Date-Time`)
+    xtsdata <- xts::xts(data, order.by = data$`Date-Time`) 
+    xtsdata$`Date-Time` <- NULL
     
     dygraph(xtsdata, height = "10px") %>%
       dyOptions(strokeWidth = 1.5, drawGrid = F, includeZero = F,
@@ -71,7 +72,8 @@ map <- function(input, output, session) {
       dyRangeSelector() %>%
       dyAxis("y", valueRange = padrange,
              label = unit_label()) %>%
-      dyEvent(x = time, label = "Current time", labelLoc = "bottom")
+      dyEvent(x = time, label = "Current time", labelLoc = "bottom") %>%
+      dyLegend()
   })
   
   tide_table <- reactive({

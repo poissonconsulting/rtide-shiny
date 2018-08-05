@@ -9,8 +9,7 @@ aboutUI <- function(id, label = 'About') {
            br(),
            p("This app was not designed for use on a mobile."),
            br(),
-           h5(disclaimer, a("rtide package GitHub page.", href = "https://github.com/poissonconsulting/rtide")),
-               
+           h5(disclaimer, a("GitHub page.", href = "https://github.com/poissonconsulting/rtide")),
            actionLink(ns('info2'), "Citation info"),
            hidden(div(id = ns("div2"),
                       h6(HTML("Data downloaded from this app are generated from the 'rtide' R package.<br><br>
@@ -19,7 +18,11 @@ aboutUI <- function(id, label = 'About') {
                          Joe Thorley, Luke Miller and Abram Fleishman (2018). rtide: Tide
                          Heights. R package version 0.0.4.9010.
                          https://github.com/poissonconsulting/rtide <br><br>
-                         
+
+                          To cite app: <br><br>
+                          Seb Dalgarno (2018). rtide: An app to download and view tide height predictions.
+                         https://poissonconsulting.shinyapps.io/rtide/<br><br>
+
                          A BibTeX entry for LaTeX users is: <br><br>
                          
                          @Manual{,
