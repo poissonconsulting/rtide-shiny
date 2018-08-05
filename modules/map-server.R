@@ -100,7 +100,7 @@ map <- function(input, output, session) {
   })
   
   # zoom to site on click or search
-  observeEvent(input$zoom,
+  observeEvent(input$zoom_to,
                {if(nrow(filter_data()) == 0L){return()}
                  leafletProxy('leaflet') %>%
                    setView(lat = filter_data()$Y, lng = filter_data()$X, zoom = click_zoom)})

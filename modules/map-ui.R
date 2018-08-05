@@ -10,25 +10,25 @@ mapUI <- function(id, label = 'map') {
     ),
     
     fluidRow(
-      absolutePanel(
+      absolutePanel(class = 'zoomPanel',
                     top = 60, left = 10, right = 'auto', bottom = 'auto',
                     width = "auto", height = "auto",
-                    selectizeInput(inputId = ns("search"), label = NULL, 
+                    div(id = "divSearch",
+                      inline(selectizeInput(inputId = ns("search"), label = NULL, 
                                     choices = c("", sites$Station),
                                     selected = "",
                                     options = list(
                                       placeholder = 'Search stations or click marker to begin...'),
-                                    width = 300))
+                                    width = 300)),
+                    inline(actionButton(ns("zoom_to"), label = NULL, icon  = icon('search'))),
+                    bsTooltip(ns("zoom_to"), "Zoom to location", placement = "bottom", trigger = "hover",
+                              options = NULL)))
       ),
+    
    
-      
     absolutePanel(leafletOutput(ns('leaflet')), top = 0, left = 0,
                   right = 0, bottom = 0, height = 'auto'),
-    # absolutePanel(id = ns("searchPanel"), class = "panel panel-default", 
-    #               draggable = TRUE, top = 60, right = 'auto', left = 60, bottom = 'auto',
-    #               width = 250, height = 'auto'
-    #               ),
-                  # actionLink(ns('zoom'), "Zoom to station")),
+
     uiOutput(ns('uiModal')))
     
     
