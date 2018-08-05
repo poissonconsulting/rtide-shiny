@@ -1,3 +1,2 @@
-rsconnect::deployApp(appDir = "shiny", account = "poissonconsulting", 
+rsconnect::deployApp(account = "poissonconsulting", 
                      appName = "rtide")
-y
