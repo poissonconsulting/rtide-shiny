@@ -5,6 +5,6 @@ account: poissonconsulting
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 230743
-bundleId: 1052558
+bundleId: 1519079
 url: https://poissonconsulting.shinyapps.io/rtide/
-when: 1509406093.7891
+when: 1533472397.92826
